@@ -20,7 +20,7 @@ class Simulator:
         # random set variant type count for each variant site
         self.type_info = []
         for _ in range(self.__site_cnt):
-            self.type_info.append(random.randint(2, self.__max_type_cnt+1))
+            self.type_info.append(random.randint(1, self.__max_type_cnt+2))
 
         self.__total_type_cnt = sum(self.type_info)
 
@@ -37,11 +37,11 @@ class Simulator:
         # simulate single site effect
         self.single_weight = array([0 for _ in range(self.__total_type_cnt)])
 
-        # for each site, last variant type is set as lost, it's effect is also set to 0
+        # for each site, if variant type more than 1, the last variant type is set as lost, it's effect is also set to 0
         site_effect_idx = 0
         for var_idx in range(self.__site_cnt):
             for type_idx in range(self.type_info[var_idx]):
-                if type_idx == self.type_info[var_idx]-1:
+                if type_idx == self.type_info[var_idx]-1 and self.type_info[var_idx] > 1:
                     self.single_weight[site_effect_idx] = 0
                 else:
                     self.single_weight[site_effect_idx] = random.randint(-100, 100)
@@ -61,10 +61,12 @@ class Simulator:
                 while len(tmp_site) < co_site_cnt:
                     tmp_site.add(random.randint(0, self.__site_cnt))
 
-                # for each site, the last type is set as lost, means it must not appear in co-effect
+                # for each site, if the variant type lager than 1,
+                # the last type is set as lost, means it must not appear in co-effect
                 tmp_site_with_type = []
                 for site in tmp_site:
-                    tmp_site_with_type.append(site+random.randint(0, self.type_info[site]-1))
+                    tmp_site_with_type.append(site+random.randint(0, 1 if self.type_info[site] == 1 else
+                                                                  self.type_info[site]-1))
                 self.multi_weight[co_site_cnt][tuple(sorted(tmp_site_with_type))] = random.randint(-100, 100)
 
     def sim_phenotypes(self):
