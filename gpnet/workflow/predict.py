@@ -4,7 +4,8 @@ from pathos.multiprocessing import Pool
 from os import path, makedirs
 
 
-def sub_process(method, in_file, weight_file, out_file):
+def sub_process(idx, method, in_file, weight_file, out_file):
+    print("Round %d" % (idx + 1))
     try:
         func = eval(method.upper())(in_file, weight_file, out_file)
         func.run()
@@ -45,13 +46,12 @@ def main(args):
             makedirs(output)
         pool = Pool(processes=thread)
         for i in range(len(in_file_list)):
-            print("Round %d" % (i+1))
             in_file = in_file_list[i]
             in_fn = get_filename(in_file)
             weight_file = weight_file_list[i]
             weight_fn = get_filename(weight_file)
             out_file = path.join(output, "%s-%s.txt" % (in_fn, weight_fn))
-            pool.apply_async(sub_process, (method, in_file, weight_file, out_file,))
+            pool.apply_async(sub_process, (i, method, in_file, weight_file, out_file,))
         pool.close()
         pool.join()
     print("Finished")
