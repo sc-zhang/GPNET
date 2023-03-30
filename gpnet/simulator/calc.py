@@ -7,6 +7,7 @@ def calc_pheno(genotype, single_weight, multi_weight):
         pheno += genotype[_] * single_weight[_]
     external = 0
     matches = set()
+    # high-order co-effect will mask low-order co-effect
     for _ in sorted(multi_weight, reverse=True):
         for sites in multi_weight[_]:
             is_match = True
