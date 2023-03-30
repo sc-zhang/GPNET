@@ -1,0 +1,39 @@
+#!/usr/bin/env python3
+from gpnet.workflow import simdata, predict
+import argparse
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(title="sub commands")
+
+    parser_simulator = subparsers.add_parser('simulator', help='Simulate genotypes and phenotype of a population')
+    parser_simulator.add_argument('-o', '--outdir', help='Output directory', required=True)
+    parser_simulator.add_argument('-r', '--round', help='Simulate round, default=1000', type=int, default=1000)
+    parser_simulator.add_argument('-s', '--sites', help='Simulate variant site count, default=100',
+                                  type=int, default=100)
+    parser_simulator.add_argument('-m', '--max_types', help='Max variant types, default=10', type=int, default=10)
+    parser_simulator.add_argument('-c', '--samples', help='Simulate sample count, default=100', type=int, default=100)
+    parser_simulator.add_argument('-t', '--thread', help='Threads, default=10', type=int, default=10)
+    parser_simulator.set_defaults(func=simdata.main)
+
+    parser_predict = subparsers.add_parser('predict', help='Predict best genotype with population')
+    parser_predict.add_argument('-i', '--input', help='Input data file or list file', required=True)
+    parser_predict.add_argument('-w', '--weight', help='Weight file or list file', required=True)
+    parser_predict.add_argument('-o', '--output', help='Output file or directory', required=True)
+    parser_predict.add_argument('--single', help='Input file is a single sample file', action='store_true')
+    parser_predict.add_argument('-m', '--method', help='Predict method, can be: MLR, CWNET, default=MLR',
+                                default="MLR")
+    parser_predict.add_argument('-t', '--thread', help='Threads, default=10, if input single file, auto set to 1',
+                                type=int, default=10)
+    parser_predict.set_defaults(func=predict.main)
+
+    try:
+        args = parser.parse_args()
+        args.func(args)
+    except AttributeError:
+        parser.print_help()
+
+
+if __name__ == "__main__":
+    main()
