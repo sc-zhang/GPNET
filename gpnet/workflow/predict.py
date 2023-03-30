@@ -1,5 +1,4 @@
-from gpnet.methods.mlr import MLR
-from gpnet.methods.cwnet import CWNET
+from gpnet.methods import *
 from pathos.multiprocessing import Pool
 from os import path, makedirs
 
@@ -35,7 +34,7 @@ def main(args):
 
     print("Predicting")
     if is_single:
-        sub_process(method, in_file, weight_file, output)
+        sub_process(0, method, in_file, weight_file, output)
     else:
         in_file_list = load_file_list(in_file)
         weight_file_list = load_file_list(weight_file)
