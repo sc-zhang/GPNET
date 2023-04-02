@@ -22,7 +22,7 @@ def main():
     parser_predict.add_argument('-w', '--weight', help='Weight file or list file', required=True)
     parser_predict.add_argument('-o', '--output', help='Output file or directory', required=True)
     parser_predict.add_argument('--single', help='Input file is a single sample file', action='store_true')
-    parser_predict.add_argument('-m', '--method', help='Predict method, can be: MLR, CWNET, default=MLR',
+    parser_predict.add_argument('-m', '--method', help='Predict method, can be: MLR, CWNET, XGB, default=MLR',
                                 default="MLR")
     parser_predict.add_argument('-t', '--thread', help='Threads, default=10, if input single file, auto set to 1',
                                 type=int, default=10)
