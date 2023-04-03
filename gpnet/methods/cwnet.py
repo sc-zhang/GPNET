@@ -29,9 +29,9 @@ class CWNET:
         idx = 0
         for site in sorted(converted_data,
                            key=lambda x: [int(log(average(converted_data[x])))
-                                          if x >= 1 and average(converted_data[x]) != 0 else 0,
+                                          if len(converted_data[x]) >= 1 and average(converted_data[x]) != 0 else 0,
                                           -std(converted_data[x])
-                                          if x > 1 else 0]):
+                                          if len(converted_data[x]) > 1 else 0]):
             self.__nodes[site] = idx
             idx += 1
         '''
@@ -63,9 +63,9 @@ class CWNET:
         idx = 0
         for pair in sorted(converted_data,
                            key=lambda x: [int(log(average(converted_data[x])))
-                                          if x >= 1 and average(converted_data[x]) != 0 else 0,
+                                          if len(converted_data[x]) >= 1 and average(converted_data[x]) != 0 else 0,
                                           -std(converted_data[x])
-                                          if x > 1 else 0]):
+                                          if len(converted_data[x]) > 1 else 0]):
             idx1, idx2 = pair
             if idx1 not in self.__edges:
                 self.__edges[idx1] = {}
