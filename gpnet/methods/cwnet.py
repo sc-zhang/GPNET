@@ -2,7 +2,7 @@ from gpnet.simulator.calc import calc_pheno
 from gpnet.algorithm.SA import SA
 from gpnet.io.data_io import DataLoader, DataSaver
 from os import getpid
-from numpy import sum, average, std
+from numpy import sum, average, std, log
 
 
 class CWNET:
@@ -26,13 +26,22 @@ class CWNET:
                     converted_data[site].append(phenotypes[_])
 
         self.__nodes = {}
+        idx = 0
+        for site in sorted(converted_data,
+                           key=lambda x: [int(log(average(converted_data[x])))
+                                          if x >= 1 and average(converted_data[x]) != 0 else 0,
+                                          -std(converted_data[x])
+                                          if x > 1 else 0]):
+            self.__nodes[site] = idx
+            idx += 1
+        '''
         for site in converted_data:
             self.__nodes[site] = 0
             if len(converted_data[site]) >= 1:
                 self.__nodes[site] += average(converted_data[site])
             if len(converted_data[site]) > 1:
                 self.__nodes[site] -= 3 * std(converted_data[site])
-
+        '''
         converted_data = {}
 
         for s1 in range(len(type_info)-1):
@@ -51,6 +60,18 @@ class CWNET:
                                 converted_data[pair].append(phenotypes[_])
 
         self.__edges = {}
+        idx = 0
+        for pair in sorted(converted_data,
+                           key=lambda x: [int(log(average(converted_data[x])))
+                                          if x >= 1 and average(converted_data[x]) != 0 else 0,
+                                          -std(converted_data[x])
+                                          if x > 1 else 0]):
+            idx1, idx2 = pair
+            if idx1 not in self.__edges:
+                self.__edges[idx1] = {}
+            self.__edges[idx1][idx2] = idx
+            idx += 1
+        '''
         for pair in converted_data:
             idx1, idx2 = pair
             if idx1 not in self.__edges:
@@ -60,6 +81,7 @@ class CWNET:
                 self.__edges[idx1][idx2] += average(converted_data[pair])
             if len(converted_data[pair]) > 1:
                 self.__edges[idx1][idx2] -= 3*std(converted_data[pair])
+        '''
 
     def calc_score(self, data):
         score = 0
