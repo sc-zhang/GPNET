@@ -26,12 +26,21 @@ class CWNET:
                     converted_data[site].append(phenotypes[_])
 
         self.__nodes = {}
+
+        avg_list = [average(converted_data[_]) if len(converted_data[_]) >= 1 else 0 for _ in range(total_site_cnt)]
+        min_avg = min(avg_list)
+        max_avg = max(avg_list)
+        # avoid divide zero
+        mm = max_avg - min_avg + 1
+        avg_list = [int((_-min_avg)*100./mm) for _ in avg_list]
+        std_list = [std(converted_data[_]) if len(converted_data[_]) >= 1 else 0 for _ in range(total_site_cnt)]
+        min_std = min(std_list)
+        max_std = max(std_list)
+        mm = max_std - min_std + 1
+        std_list = [int((_-min_avg)*100./mm) for _ in std_list]
+
         idx = 0
-        for site in sorted(converted_data,
-                           key=lambda x: [int(log(average(converted_data[x])))
-                                          if len(converted_data[x]) >= 1 and average(converted_data[x]) != 0 else 0,
-                                          -std(converted_data[x])
-                                          if len(converted_data[x]) > 1 else 0]):
+        for site in sorted(converted_data, key=lambda x: [avg_list[x], -std_list[x]]):
             self.__nodes[site] = idx
             idx += 1
         '''
@@ -60,12 +69,34 @@ class CWNET:
                                 converted_data[pair].append(phenotypes[_])
 
         self.__edges = {}
+
+        avg_db = {pair: average(converted_data[pair]) if len(converted_data[pair]) > 0 else 0
+                  for pair in converted_data}
+        fst_pair = list(converted_data.keys())[0]
+        min_avg = avg_db[fst_pair]
+        max_avg = avg_db[fst_pair]
+        for pair in avg_db:
+            if avg_db[pair] > max_avg:
+                max_avg = avg_db[pair]
+            if avg_db[pair] < min_avg:
+                min_avg = avg_db[pair]
+        mm = max_avg - min_avg + 1
+        avg_db = {pair: int((avg_db[pair]-min_avg)*100./mm) for pair in avg_db}
+        
+        std_db = {pair: std(converted_data[pair]) if len(converted_data[pair]) > 1 else 0
+                  for pair in converted_data}
+        min_std = std_db[fst_pair]
+        max_std = std_db[fst_pair]
+        for pair in std_db:
+            if std_db[pair] > max_std:
+                max_std = std_db[pair]
+            if std_db[pair] < min_std:
+                min_std = std_db[pair]
+        mm = max_std - min_std + 1
+        std_db = {pair: int((std_db[pair]-min_std)*100./mm) for pair in std_db}
+
         idx = 0
-        for pair in sorted(converted_data,
-                           key=lambda x: [int(log(average(converted_data[x])))
-                                          if len(converted_data[x]) >= 1 and average(converted_data[x]) > 0 else 0,
-                                          -std(converted_data[x])
-                                          if len(converted_data[x]) > 1 else 0]):
+        for pair in sorted(converted_data, key=lambda x: [avg_db[x], -std_db[x]]):
             idx1, idx2 = pair
             if idx1 not in self.__edges:
                 self.__edges[idx1] = {}
