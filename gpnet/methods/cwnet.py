@@ -72,26 +72,15 @@ class CWNET:
 
         avg_db = {pair: average(converted_data[pair]) if len(converted_data[pair]) > 0 else 0
                   for pair in converted_data}
-        fst_pair = list(converted_data.keys())[0]
-        min_avg = avg_db[fst_pair]
-        max_avg = avg_db[fst_pair]
-        for pair in avg_db:
-            if avg_db[pair] > max_avg:
-                max_avg = avg_db[pair]
-            if avg_db[pair] < min_avg:
-                min_avg = avg_db[pair]
+        min_avg = min([avg_db[_] for _ in avg_db])
+        max_avg = max([avg_db[_] for _ in avg_db])
         mm = max_avg - min_avg + 1
         avg_db = {pair: int((avg_db[pair]-min_avg)*100./mm) for pair in avg_db}
         
         std_db = {pair: std(converted_data[pair]) if len(converted_data[pair]) > 1 else 0
                   for pair in converted_data}
-        min_std = std_db[fst_pair]
-        max_std = std_db[fst_pair]
-        for pair in std_db:
-            if std_db[pair] > max_std:
-                max_std = std_db[pair]
-            if std_db[pair] < min_std:
-                min_std = std_db[pair]
+        min_std = min([std_db[_] for _ in std_db])
+        max_std = max([std_db[_] for _ in std_db])
         mm = max_std - min_std + 1
         std_db = {pair: int((std_db[pair]-min_std)*100./mm) for pair in std_db}
 
