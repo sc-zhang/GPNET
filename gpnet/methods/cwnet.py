@@ -63,7 +63,7 @@ class CWNET:
         idx = 0
         for pair in sorted(converted_data,
                            key=lambda x: [int(log(average(converted_data[x])))
-                                          if len(converted_data[x]) >= 1 and average(converted_data[x]) != 0 else 0,
+                                          if len(converted_data[x]) >= 1 and average(converted_data[x]) > 0 else 0,
                                           -std(converted_data[x])
                                           if len(converted_data[x]) > 1 else 0]):
             idx1, idx2 = pair
