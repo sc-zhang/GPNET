@@ -1,0 +1,76 @@
+## Introduction
+This software is used for creating network for genotype and phenotype analysis.
+
+## Dependencies
+Software:
+- Python 3.7+
+
+Python modules:
+- numpy
+- xgboost
+- scikit-learn
+- pathos
+
+## Installation
+```bash
+cd /path/to/install
+git clone https://github.com/sc-zhang/GPNet.git
+cd GPNet
+chmod +x gpnet.py
+# Optional
+echo 'export PATH=/path/to/install/AlleleFinder/bin:$PATH' >> ~/.bash_profile
+source ~/.bash_profile
+```
+
+## Usage
+- Main program
+```bash
+usage: gpnet.py [-h] {simulator,predict} ...
+
+options:
+  -h, --help           show this help message and exit
+
+sub commands:
+  {simulator,predict}
+    simulator          Simulate genotypes and phenotype of a population
+    predict            Predict best genotype with population
+```
+
+- simulator is used for simulating data for testing our methods.
+```bash
+usage: gpnet.py simulator [-h] -o OUTDIR [-r ROUND] [-s SITES] [-m MAX_TYPES] [-c SAMPLES] [-t THREAD]
+
+options:
+  -h, --help            show this help message and exit
+  -o OUTDIR, --outdir OUTDIR
+                        Output directory
+  -r ROUND, --round ROUND
+                        Simulate round, default=1000
+  -s SITES, --sites SITES
+                        Simulate variant site count, default=100
+  -m MAX_TYPES, --max_types MAX_TYPES
+                        Max variant types, default=10
+  -c SAMPLES, --samples SAMPLES
+                        Simulate sample count, default=100
+  -t THREAD, --thread THREAD
+                        Threads, default=10
+```
+
+- predict is used for predicting best genotypes with phenotypes from population.
+```bash
+usage: gpnet.py predict [-h] -i INPUT -w WEIGHT -o OUTPUT [--single] [-m METHOD] [-t THREAD]
+
+options:
+  -h, --help            show this help message and exit
+  -i INPUT, --input INPUT
+                        Input data file or list file
+  -w WEIGHT, --weight WEIGHT
+                        Weight file or list file
+  -o OUTPUT, --output OUTPUT
+                        Output file or directory
+  --single              Input file is a single sample file
+  -m METHOD, --method METHOD
+                        Predict method, can be: MLR, CWNET, XGB, default=MLR
+  -t THREAD, --thread THREAD
+                        Threads, default=10, if input single file, auto set to 1
+```
