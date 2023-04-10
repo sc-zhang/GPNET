@@ -1,6 +1,7 @@
 from gpnet.simulator.calc import calc_pheno
 from gpnet.algorithm.SA import SA
 from gpnet.io.data_io import DataLoader, DataSaver
+from gpnet.io.message import Message
 from os import getpid
 from numpy import sum, average, std, log
 
@@ -119,7 +120,7 @@ class CWNET:
         return score
 
     def run(self):
-        print("\tPID:%d Loading data" % getpid())
+        Message.info("\tPID:%d Loading data" % getpid())
         dl = DataLoader()
         dl.load_genotype(self.__in_file)
         dl.load_weight_data(self.__weight_file)
@@ -131,14 +132,14 @@ class CWNET:
         for type_cnt in type_info:
             self.__inc_type_info.append(self.__inc_type_info[-1] + type_cnt)
 
-        print("\tPID:%d Generating network" % getpid())
+        Message.info("\tPID:%d Generating network" % getpid())
         self.generate_network(type_info, genotypes, phenotypes)
-        print("\tPID:%d Running SA" % getpid())
+        Message.info("\tPID:%d Running SA" % getpid())
         sa = SA(type_info, self.calc_score, iterate=100, alpha=0.99)
         sa.run()
         best_sa_data = sa.data
         best_sa_pheno = calc_pheno(best_sa_data, single_weight, multi_weight)
 
-        print("\tPID:%d Saving predict data" % getpid())
+        Message.info("\tPID:%d Saving predict data" % getpid())
         ds = DataSaver(self.__out_file)
         ds.save_data(type_info, [best_sa_data], [best_sa_pheno])

@@ -3,6 +3,7 @@ from sklearn.model_selection import train_test_split
 from gpnet.simulator.calc import calc_pheno
 from gpnet.algorithm.SA import SA
 from gpnet.io.data_io import DataLoader, DataSaver
+from gpnet.io.message import Message
 from os import getpid
 
 
@@ -47,7 +48,7 @@ class XGB:
                                  evals_result=evals_result)
 
     def run(self):
-        print("\tPID:%d Loading data" % getpid())
+        Message.info("\tPID:%d Loading data" % getpid())
         dl = DataLoader()
         dl.load_genotype(self.__in_file)
         dl.load_weight_data(self.__weight_file)
@@ -57,14 +58,14 @@ class XGB:
         single_weight = dl.single_weight
         multi_weight = dl.multi_weight
 
-        print("\tPID:%d Starting XGBoost" % getpid())
+        Message.info("\tPID:%d Starting XGBoost" % getpid())
         self.__model_train(genotypes, phenotypes)
-        print("\tPID:%d Running SA" % getpid())
+        Message.info("\tPID:%d Running SA" % getpid())
         sa = SA(type_info, self.predict, iterate=100, alpha=0.99)
         sa.run()
         best_sa_data = sa.data
         best_sa_pheno = calc_pheno(best_sa_data, single_weight, multi_weight)
 
-        print("\tPID:%d Saving predict data" % getpid())
+        Message.info("\tPID:%d Saving predict data" % getpid())
         ds = DataSaver(self.__out_file)
         ds.save_data(type_info, [best_sa_data], [best_sa_pheno])

@@ -1,15 +1,16 @@
 from gpnet.methods import *
+from gpnet.io.message import Message
 from pathos.multiprocessing import Pool
 from os import path, makedirs
 
 
 def sub_process(idx, method, in_file, weight_file, out_file):
-    print("Round %d" % (idx + 1))
+    Message.info("Round %d" % (idx + 1))
     try:
         func = eval(method.upper())(in_file, weight_file, out_file)
         func.run()
     except NameError:
-        print("No method named: %s" % method)
+        Message.error("No method named: %s" % method)
 
 
 def load_file_list(in_file):
@@ -32,14 +33,14 @@ def main(args):
     method = args.method
     thread = args.thread
 
-    print("Predicting")
+    Message.info("Predicting")
     if is_single:
         sub_process(0, method, in_file, weight_file, output)
     else:
         in_file_list = load_file_list(in_file)
         weight_file_list = load_file_list(weight_file)
         if len(in_file_list) != len(weight_file_list):
-            print("Input data and weight not match, please check it")
+            Message.error("Input data and weight not match, please check it")
             exit(-1)
         if not path.exists(output):
             makedirs(output)
@@ -53,4 +54,4 @@ def main(args):
             pool.apply_async(sub_process, (i, method, in_file, weight_file, out_file,))
         pool.close()
         pool.join()
-    print("Finished")
+    Message.info("Finished")
