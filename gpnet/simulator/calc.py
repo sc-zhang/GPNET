@@ -2,6 +2,7 @@ from numpy import random
 
 
 def calc_pheno(genotype, single_weight, multi_weight):
+    __RAND_EFFECT = [-100, 100]
     pheno = 0
     for _ in range(len(genotype)):
         pheno += genotype[_] * single_weight[_]
@@ -26,5 +27,5 @@ def calc_pheno(genotype, single_weight, multi_weight):
     pheno += external
 
     # Simulate environment effect
-    pheno += random.randint(-100, 100)
+    pheno += random.randint(__RAND_EFFECT[0], __RAND_EFFECT[1])
     return pheno

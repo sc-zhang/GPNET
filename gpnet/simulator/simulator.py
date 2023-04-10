@@ -3,12 +3,16 @@ from gpnet.simulator.calc import calc_pheno
 
 
 class Simulator:
-    def __init__(self, site_cnt, max_type_cnt, sample_cnt):
+    def __init__(self, site_cnt, max_type_cnt, noise_ratio, sample_cnt):
         random.seed()
         self.__site_cnt = site_cnt
         self.__max_type_cnt = max_type_cnt
+        self.__noise_ratio = noise_ratio
         self.__sample_cnt = sample_cnt
         self.__total_type_cnt = 0
+
+        self.__NOISE_EFFECT = [-20, 20]
+        self.__NORMAL_EFFECT = [-100, 100]
 
         self.genotypes = None
         self.type_info = None
@@ -44,7 +48,12 @@ class Simulator:
                 if type_idx == self.type_info[var_idx]-1 and self.type_info[var_idx] > 1:
                     self.single_weight[site_effect_idx] = 0
                 else:
-                    self.single_weight[site_effect_idx] = random.randint(-100, 100)
+                    if random.rand() < self.__noise_ratio:
+                        self.single_weight[site_effect_idx] = random.randint(self.__NOISE_EFFECT[0],
+                                                                             self.__NOISE_EFFECT[1])
+                    else:
+                        self.single_weight[site_effect_idx] = random.randint(self.__NORMAL_EFFECT[0],
+                                                                             self.__NORMAL_EFFECT[1])
                 site_effect_idx += 1
 
         # simulate multi sites co-effect
@@ -67,7 +76,8 @@ class Simulator:
                 for site in tmp_site:
                     tmp_site_with_type.append(site+random.randint(0, 1 if self.type_info[site] == 1 else
                                                                   self.type_info[site]-1))
-                self.multi_weight[co_site_cnt][tuple(sorted(tmp_site_with_type))] = random.randint(-100, 100)
+                self.multi_weight[co_site_cnt][tuple(sorted(tmp_site_with_type))] = \
+                    random.randint(self.__NORMAL_EFFECT[0], self.__NORMAL_EFFECT[1])
 
     def sim_phenotypes(self):
         self.phenotypes = array([0 for _ in range(self.__sample_cnt)])
