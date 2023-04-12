@@ -11,14 +11,15 @@ class CWNET:
         self.__in_file = in_file
         self.__weight_file = weight_file
         self.__out_file = out_file
+        self.__type_info = None
         self.__inc_type_info = [0]
 
         self.__nodes = None
         self.__edges = None
 
-    def generate_network(self, type_info, genotypes, phenotypes):
+    def generate_network(self, genotypes, phenotypes):
         converted_data = {}
-        total_site_cnt = sum(type_info)
+        total_site_cnt = sum(self.__type_info)
 
         for site in range(total_site_cnt):
             converted_data[site] = []
@@ -44,20 +45,13 @@ class CWNET:
         for site in sorted(converted_data, key=lambda x: [avg_list[x], -std_list[x]]):
             self.__nodes[site] = idx
             idx += 1
-        '''
-        for site in converted_data:
-            self.__nodes[site] = 0
-            if len(converted_data[site]) >= 1:
-                self.__nodes[site] += average(converted_data[site])
-            if len(converted_data[site]) > 1:
-                self.__nodes[site] -= 3 * std(converted_data[site])
-        '''
+
         converted_data = {}
 
-        for s1 in range(len(type_info)-1):
-            for s2 in range(s1+1, len(type_info)):
-                for t1 in range(type_info[s1]):
-                    for t2 in range(type_info[s2]):
+        for s1 in range(len(self.__type_info)-1):
+            for s2 in range(s1+1, len(self.__type_info)):
+                for t1 in range(self.__type_info[s1]):
+                    for t2 in range(self.__type_info[s2]):
                         idx1 = self.__inc_type_info[s1]+t1
                         idx2 = self.__inc_type_info[s2]+t2
 
@@ -92,17 +86,6 @@ class CWNET:
                 self.__edges[idx1] = {}
             self.__edges[idx1][idx2] = idx
             idx += 1
-        '''
-        for pair in converted_data:
-            idx1, idx2 = pair
-            if idx1 not in self.__edges:
-                self.__edges[idx1] = {}
-            self.__edges[idx1][idx2] = 0
-            if len(converted_data[pair]) >= 1:
-                self.__edges[idx1][idx2] += average(converted_data[pair])
-            if len(converted_data[pair]) > 1:
-                self.__edges[idx1][idx2] -= 3*std(converted_data[pair])
-        '''
 
     def calc_score(self, data):
         score = 0
@@ -119,27 +102,64 @@ class CWNET:
                 score += self.__edges[available_sites[i]][available_sites[j]]
         return score
 
+    def _get_node_edge_weight(self):
+        node_weight = []
+        edge_weight = []
+
+        for _ in range(len(self.__type_info)):
+            for __ in range(self.__type_info[_]):
+                site = "Site%d-Type%d" % (_+1, __+1)
+                idx = self.__inc_type_info[_] + __
+                node_weight.append([site, self.__nodes[idx]])
+
+        for s1 in range(len(self.__type_info)-1):
+            for s2 in range(s1+1, len(self.__type_info)):
+                for t1 in range(self.__type_info[s1]):
+                    for t2 in range(self.__type_info[s2]):
+                        idx1 = self.__inc_type_info[s1]+t1
+                        idx2 = self.__inc_type_info[s2]+t2
+                        site1 = "Site%d-Type%d" % (s1+1, t1+1)
+                        site2 = "Site%d-Type%d" % (s2+1, t2+1)
+                        edge_weight.append([site1, site2, self.__edges[idx1][idx2]])
+
+        # generate additional information of weight of nodes and weight of edges, sorted by weight descend
+        additional_info = ["#\n# Nodes weights"]
+        for _ in sorted(node_weight, key=lambda x: x[-1], reverse=True):
+            additional_info.append("# %s" % (' '.join(map(str, _))))
+
+        additional_info.append("#\n# Edges weights")
+        for _ in sorted(edge_weight, key=lambda x: x[-1], reverse=True):
+            additional_info.append("# %s" % (' '.join(map(str, _))))
+
+        return additional_info
+
     def run(self):
         Message.info("\tPID:%d Loading data" % getpid())
         dl = DataLoader()
         dl.load_genotype(self.__in_file)
-        dl.load_weight_data(self.__weight_file)
         genotypes = dl.genotypes
         phenotypes = dl.phenotypes
-        type_info = dl.type_info
-        single_weight = dl.single_weight
-        multi_weight = dl.multi_weight
-        for type_cnt in type_info:
+        self.__type_info = dl.type_info
+
+        for type_cnt in self.__type_info:
             self.__inc_type_info.append(self.__inc_type_info[-1] + type_cnt)
 
         Message.info("\tPID:%d Generating network" % getpid())
-        self.generate_network(type_info, genotypes, phenotypes)
+        self.generate_network(genotypes, phenotypes)
         Message.info("\tPID:%d Running SA" % getpid())
-        sa = SA(type_info, self.calc_score, iterate=100, alpha=0.99)
+        sa = SA(self.__type_info, self.calc_score, iterate=100, alpha=0.99)
         sa.run()
         best_sa_data = sa.data
-        best_sa_pheno = calc_pheno(best_sa_data, single_weight, multi_weight)
+
+        # best_sa_pheno can only be calculated while data is generated by gpnet.py simulator
+        if self.__weight_file:
+            dl.load_weight_data(self.__weight_file)
+            single_weight = dl.single_weight
+            multi_weight = dl.multi_weight
+            best_sa_pheno = calc_pheno(best_sa_data, single_weight, multi_weight)
+        else:
+            best_sa_pheno = "Not support"
 
         Message.info("\tPID:%d Saving predict data" % getpid())
         ds = DataSaver(self.__out_file)
-        ds.save_data(type_info, [best_sa_data], [best_sa_pheno])
+        ds.save_data(self.__type_info, [best_sa_data], [best_sa_pheno], self._get_node_edge_weight())

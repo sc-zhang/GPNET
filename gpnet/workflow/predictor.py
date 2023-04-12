@@ -38,19 +38,25 @@ def main(args):
         sub_process(0, method, in_file, weight_file, output)
     else:
         in_file_list = load_file_list(in_file)
-        weight_file_list = load_file_list(weight_file)
-        if len(in_file_list) != len(weight_file_list):
-            Message.error("Input data and weight not match, please check it")
-            exit(-1)
+        weight_file_list = []
+        if weight_file:
+            weight_file_list = load_file_list(weight_file)
+            if len(in_file_list) != len(weight_file_list):
+                Message.error("Input data and weight not match, please check it")
+                exit(-1)
         if not path.exists(output):
             makedirs(output)
         pool = Pool(processes=thread)
         for i in range(len(in_file_list)):
             in_file = in_file_list[i]
             in_fn = get_filename(in_file)
-            weight_file = weight_file_list[i]
-            weight_fn = get_filename(weight_file)
-            out_file = path.join(output, "%s-%s.txt" % (in_fn, weight_fn))
+            if weight_file_list:
+                weight_file = weight_file_list[i]
+                weight_fn = get_filename(weight_file)
+                out_file = path.join(output, "%s-%s.txt" % (in_fn, weight_fn))
+            else:
+                weight_file = None
+                out_file = path.join(output, "%s.txt" % in_fn)
             pool.apply_async(sub_process, (i, method, in_file, weight_file, out_file,))
         pool.close()
         pool.join()

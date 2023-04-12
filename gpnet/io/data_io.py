@@ -5,7 +5,7 @@ class DataSaver:
     def __init__(self, out_file):
         self.__out_file = out_file
 
-    def save_data(self, type_info, genotypes, phenotypes):
+    def save_data(self, type_info, genotypes, phenotypes, additional_info=None):
         # type_info is like:
         # [site1_type_count, site2_type_count, ..., siteN_type_count]
         with open(self.__out_file, 'w') as fout:
@@ -16,7 +16,9 @@ class DataSaver:
                     fout.write("Site%d-Type%d\t" % (_ + 1, __ + 1))
             fout.write("Phenotype\n")
             for _ in range(len(genotypes)):
-                fout.write("%d\t%s\t%d\n" % (_ + 1, '\t'.join(list(map(str, list(genotypes[_])))), phenotypes[_]))
+                fout.write("%d\t%s\t%s\n" % (_ + 1, '\t'.join(list(map(str, list(genotypes[_])))), str(phenotypes[_])))
+            if additional_info:
+                fout.write("%s\n" % ('\n'.join(additional_info)))
 
     def save_weight(self, single_weight, multi_weight):
         with open(self.__out_file, 'w') as fout:
