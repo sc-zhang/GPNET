@@ -14,7 +14,8 @@ def main():
                                   type=int, default=100)
     parser_simulator.add_argument('-m', '--max_types', help='Max variant types, default=10', type=int, default=10)
     parser_simulator.add_argument('-n', '--noise', help='Noise ratio of sites, these sites have lower genomic value'
-                                                        'than others, default=0.0', type=float, default=0.0)
+                                                        'than others and not appear in co-effect sites'
+                                                        ', default=0.0 and less than 1', type=float, default=0.0)
     parser_simulator.add_argument('-c', '--samples', help='Simulate sample count, default=100', type=int, default=100)
     parser_simulator.add_argument('-t', '--thread', help='Threads, default=10', type=int, default=10)
     parser_simulator.set_defaults(func=simdata.main)

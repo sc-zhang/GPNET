@@ -44,6 +44,10 @@ def main(args):
     sample_cnt = args.samples
     thread = args.thread
 
+    if noise_ratio >= 1:
+        Message.error("Noise ratio must less than 1, abort!")
+        exit(-1)
+
     cur_dir = getcwd()
     if not path.exists(out_dir):
         makedirs(out_dir)
