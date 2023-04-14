@@ -75,35 +75,26 @@ class Simulator:
                     tmp_sites.add(random.randint(0, self.__site_cnt))
 
                 # for each site, if the variant type lager than 1,
-                # the last type is set as lost, means it must not appear in co-effect sites,
-                # and if a site is a noise site, it also must not appear in co-effect sites
+                # the last type is set as lost, means it must not appear in co-effect sites
                 tmp_site_with_types = []
 
-                single_site_not_suitable = False
+                contain_noise_site = False
                 for site in tmp_sites:
-                    # the co-effect must not appear while one site is marked as lost or noise
+                    # the co-effect must not appear while one site is marked as lost
                     site_with_type_idx = site + random.randint(0, 1 if self.type_info[site] == 1 else
                                                                self.type_info[site] - 1)
 
-                    # avoid endless loop while noise ratio is too large
-                    select_cnt = 0
-                    while site_with_type_idx in noise_sites and select_cnt < 1000:
-                        site_with_type_idx = random.randint(0, 1 if self.type_info[site] == 1 else
-                                                            self.type_info[site] - 1)
-                        select_cnt += 1
-
-                    # if one site cannot select a suitable variant type, means this site cannot take part in co-effect
                     if site_with_type_idx in noise_sites:
-                        single_site_not_suitable = True
-                        break
-
+                        contain_noise_site = True
                     tmp_site_with_types.append(site_with_type_idx)
 
-                # if there is any not suitable site, the co-effect won't appear, we need new combination of sites
-                if single_site_not_suitable:
-                    continue
-                self.multi_weight[co_site_cnt][tuple(sorted(tmp_site_with_types))] = \
-                    random.randint(self.__NORMAL_EFFECT[0], self.__NORMAL_EFFECT[1])
+                # if the co-effect sites contain noise site, the co-effect is also simulate with NOISE EFFECT range
+                if contain_noise_site:
+                    self.multi_weight[co_site_cnt][tuple(sorted(tmp_site_with_types))] = \
+                        random.randint(self.__NOISE_EFFECT[0], self.__NOISE_EFFECT[1])
+                else:
+                    self.multi_weight[co_site_cnt][tuple(sorted(tmp_site_with_types))] = \
+                        random.randint(self.__NORMAL_EFFECT[0], self.__NORMAL_EFFECT[1])
 
     def sim_phenotypes(self):
         self.phenotypes = array([0 for _ in range(self.__sample_cnt)])
