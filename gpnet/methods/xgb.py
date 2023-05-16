@@ -13,7 +13,7 @@ class XGB:
         self.__weight_file = weight_file
         self.__out_file = out_file
         self.__type_info = None
-        self.__inc_type_info = [0]
+        self.__allele_name = None
         self.__model = None
 
     def predict(self, data):
@@ -52,11 +52,8 @@ class XGB:
     def _get_node_importance(self):
         node_coefficients = []
         importance = self.__model.get_score(fmap='', importance_type='gain')
-        for _ in range(len(self.__type_info)):
-            for __ in range(self.__type_info[_]):
-                site = "Site%d-Type%d" % (_+1, __+1)
-                idx = "f%d" % (self.__inc_type_info[_] + __)
-                node_coefficients.append([site, importance[idx]])
+        for idx in range(len(self.__allele_name)):
+            node_coefficients.append([self.__allele_name[idx], importance[idx]])
 
         # generate additional information of importance of each site, sorted by importance descend
         additional_info = ["#\n# Nodes importance"]
@@ -72,9 +69,7 @@ class XGB:
         genotypes = dl.genotypes
         phenotypes = dl.phenotypes
         self.__type_info = dl.type_info
-
-        for type_cnt in self.__type_info:
-            self.__inc_type_info.append(self.__inc_type_info[-1] + type_cnt)
+        self.__allele_name = dl.allele_name
 
         Message.info("\tPID:%d Starting XGBoost" % getpid())
         self.__model_train(genotypes, phenotypes)

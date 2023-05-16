@@ -12,7 +12,7 @@ class MLR:
         self.__weight_file = weight_file
         self.__out_file = out_file
         self.__type_info = None
-        self.__inc_type_info = [0]
+        self.__allele_name = None
         self.__lrg = LinearRegression()
         self.__model = None
 
@@ -22,11 +22,8 @@ class MLR:
     def _get_node_coefficients(self):
         node_coefficients = []
 
-        for _ in range(len(self.__type_info)):
-            for __ in range(self.__type_info[_]):
-                site = "Site%d-Type%d" % (_+1, __+1)
-                idx = self.__inc_type_info[_] + __
-                node_coefficients.append([site, self.__lrg.coef_[idx]])
+        for _ in range(len(self.__allele_name)):
+            node_coefficients.append([self.__allele_name[_], self.__lrg.coef_[_]])
 
         # generate additional information of coefficients of each site, sorted by coefficients descend
         additional_info = ["#\n# Nodes coefficients"]
@@ -42,9 +39,7 @@ class MLR:
         genotypes = dl.genotypes
         phenotypes = dl.phenotypes
         self.__type_info = dl.type_info
-
-        for type_cnt in self.__type_info:
-            self.__inc_type_info.append(self.__inc_type_info[-1] + type_cnt)
+        self.__allele_name = dl.allele_name
 
         Message.info("\tPID:%d Starting multi linear regression" % getpid())
         X_train = genotypes
@@ -66,4 +61,5 @@ class MLR:
 
         Message.info("\tPID:%d Saving predict data" % getpid())
         ds = DataSaver(self.__out_file)
-        ds.save_data(self.__type_info, [best_sa_data], [best_sa_pheno], self._get_node_coefficients())
+        ds.save_data(self.__type_info, self.__allele_name, [best_sa_data], [best_sa_pheno],
+                     self._get_node_coefficients())

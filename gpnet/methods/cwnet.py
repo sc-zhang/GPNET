@@ -12,7 +12,7 @@ class CWNET:
         self.__weight_file = weight_file
         self.__out_file = out_file
         self.__type_info = None
-        self.__inc_type_info = [0]
+        self.__allele_name = None
 
         self.__nodes = None
         self.__edges = None
@@ -48,20 +48,15 @@ class CWNET:
 
         converted_data = {}
 
-        for s1 in range(len(self.__type_info)-1):
-            for s2 in range(s1+1, len(self.__type_info)):
-                for t1 in range(self.__type_info[s1]):
-                    for t2 in range(self.__type_info[s2]):
-                        idx1 = self.__inc_type_info[s1]+t1
-                        idx2 = self.__inc_type_info[s2]+t2
-
-                        pair = tuple([idx1, idx2])
-                        if pair not in converted_data:
-                            converted_data[pair] = []
-                        for _ in range(len(genotypes)):
-                            genotype = genotypes[_]
-                            if genotype[idx1] == genotype[idx2] == 1:
-                                converted_data[pair].append(phenotypes[_])
+        for idx1 in range(len(self.__allele_name)-1):
+            for idx2 in range(idx1+1, len(self.__allele_name)):
+                pair = tuple([idx1, idx2])
+                if pair not in converted_data:
+                    converted_data[pair] = []
+                for _ in range(len(genotypes)):
+                    genotype = genotypes[_]
+                    if genotype[idx1] == genotype[idx2] == 1:
+                        converted_data[pair].append(phenotypes[_])
 
         self.__edges = {}
 
@@ -106,21 +101,12 @@ class CWNET:
         node_weight = []
         edge_weight = []
 
-        for _ in range(len(self.__type_info)):
-            for __ in range(self.__type_info[_]):
-                site = "Site%d-Type%d" % (_+1, __+1)
-                idx = self.__inc_type_info[_] + __
-                node_weight.append([site, self.__nodes[idx]])
+        for idx in range(len(self.__allele_name)):
+            node_weight.append([self.__allele_name[idx], self.__nodes[idx]])
 
-        for s1 in range(len(self.__type_info)-1):
-            for s2 in range(s1+1, len(self.__type_info)):
-                for t1 in range(self.__type_info[s1]):
-                    for t2 in range(self.__type_info[s2]):
-                        idx1 = self.__inc_type_info[s1]+t1
-                        idx2 = self.__inc_type_info[s2]+t2
-                        site1 = "Site%d-Type%d" % (s1+1, t1+1)
-                        site2 = "Site%d-Type%d" % (s2+1, t2+1)
-                        edge_weight.append([site1, site2, self.__edges[idx1][idx2]])
+        for idx1 in range(len(self.__allele_name)-1):
+            for idx2 in range(idx1+1, len(self.__allele_name)):
+                edge_weight.append([self.__allele_name[idx1], self.__allele_name[idx2], self.__edges[idx1][idx2]])
 
         # generate additional information of weight of nodes and weight of edges, sorted by weight descend
         additional_info = ["#\n# Nodes weights"]
@@ -140,9 +126,7 @@ class CWNET:
         genotypes = dl.genotypes
         phenotypes = dl.phenotypes
         self.__type_info = dl.type_info
-
-        for type_cnt in self.__type_info:
-            self.__inc_type_info.append(self.__inc_type_info[-1] + type_cnt)
+        self.__allele_name = dl.allele_name
 
         Message.info("\tPID:%d Generating network" % getpid())
         self.generate_network(genotypes, phenotypes)
@@ -162,4 +146,5 @@ class CWNET:
 
         Message.info("\tPID:%d Saving predict data" % getpid())
         ds = DataSaver(self.__out_file)
-        ds.save_data(self.__type_info, [best_sa_data], [best_sa_pheno], self._get_node_edge_weight())
+        ds.save_data(self.__type_info, self.__allele_name, [best_sa_data], [best_sa_pheno],
+                     self._get_node_edge_weight())
