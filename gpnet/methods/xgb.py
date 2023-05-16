@@ -27,7 +27,7 @@ class XGB:
                   'subsample': 0.7,
                   'colsample_bytree': 0.7,
                   'reg_alpha': 0.005,
-                  'nthread': 6,
+                  'nthread': 1,
                   'eval_metric': ['logloss', 'rmse', 'mae'],
                   'eta': 0.3
                   }
