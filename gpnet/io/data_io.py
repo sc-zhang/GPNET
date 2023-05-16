@@ -5,7 +5,21 @@ class DataSaver:
     def __init__(self, out_file):
         self.__out_file = out_file
 
-    def save_data(self, type_info, genotypes, phenotypes, additional_info=None):
+    def save_data(self, type_info, allele_name, genotypes, phenotypes, additional_info=None):
+        # type_info is like:
+        # [site1_type_count, site2_type_count, ..., siteN_type_count]
+        with open(self.__out_file, 'w') as fout:
+            fout.write("#TypeInfo\t%s\n" % ('\t'.join(map(str, type_info))))
+            fout.write("#Sample\t")
+            for _ in allele_name:
+                fout.write("%s\t" % _)
+            fout.write("Phenotype\n")
+            for _ in range(len(genotypes)):
+                fout.write("%d\t%s\t%s\n" % (_ + 1, '\t'.join(list(map(str, list(genotypes[_])))), str(phenotypes[_])))
+            if additional_info:
+                fout.write("%s\n" % ('\n'.join(additional_info)))
+
+    def save_sim_data(self, type_info, genotypes, phenotypes):
         # type_info is like:
         # [site1_type_count, site2_type_count, ..., siteN_type_count]
         with open(self.__out_file, 'w') as fout:
@@ -17,10 +31,8 @@ class DataSaver:
             fout.write("Phenotype\n")
             for _ in range(len(genotypes)):
                 fout.write("%d\t%s\t%s\n" % (_ + 1, '\t'.join(list(map(str, list(genotypes[_])))), str(phenotypes[_])))
-            if additional_info:
-                fout.write("%s\n" % ('\n'.join(additional_info)))
 
-    def save_weight(self, single_weight, multi_weight):
+    def save_sim_weight(self, single_weight, multi_weight):
         with open(self.__out_file, 'w') as fout:
             fout.write("## Single weight\n")
             fout.write("%s\n" % ('\t'.join(map(str, list(single_weight)))))
@@ -34,6 +46,7 @@ class DataSaver:
 class DataLoader:
     def __init__(self):
         self.type_info = None
+        self.allele_name = None
         self.genotypes = None
         self.phenotypes = None
         self.single_weight = None
@@ -48,6 +61,8 @@ class DataLoader:
                 if line[0] == '#':
                     if line.startswith("#TypeInfo"):
                         self.type_info = list(map(int, data[1:]))
+                    elif line.startswith("Sample"):
+                        self.allele_name = data[1:-1]
                     continue
                 self.genotypes.append(list(map(int, data[1:-1])))
                 self.phenotypes.append(float(data[-1]))
