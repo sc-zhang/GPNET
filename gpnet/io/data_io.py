@@ -61,7 +61,7 @@ class DataLoader:
                 if line[0] == '#':
                     if line.startswith("#TypeInfo"):
                         self.type_info = list(map(int, data[1:]))
-                    elif line.startswith("Sample"):
+                    elif line.startswith("#Sample"):
                         self.allele_name = data[1:-1]
                     continue
                 self.genotypes.append(list(map(int, data[1:-1])))
