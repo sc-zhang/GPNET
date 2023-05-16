@@ -50,7 +50,7 @@ class DataLoader:
                         self.type_info = list(map(int, data[1:]))
                     continue
                 self.genotypes.append(list(map(int, data[1:-1])))
-                self.phenotypes.append(int(data[-1]))
+                self.phenotypes.append(float(data[-1]))
         self.genotypes = array(self.genotypes)
         self.phenotypes = array(self.phenotypes)
 
