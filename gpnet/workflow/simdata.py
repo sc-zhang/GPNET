@@ -25,12 +25,12 @@ def each_round(round_idx, site_cnt, max_type_cnt, noise_ratio, sample_cnt):
     Message.info("\tPID:%d Saving data" % getpid())
     out_file = "Round%d.txt" % (round_idx + 1)
     ds = DataSaver(out_file)
-    ds.save_data(type_info, genotypes, phenotypes)
+    ds.save_sim_data(type_info, genotypes, phenotypes)
     Message.info("\tPID:%d Saving weight" % getpid())
 
     out_file = "Weight%d.txt" % (round_idx + 1)
     ds = DataSaver(out_file)
-    ds.save_weight(single_weight, multi_weight)
+    ds.save_sim_weight(single_weight, multi_weight)
 
     Message.info("\tPID:%d Finished" % getpid())
 
