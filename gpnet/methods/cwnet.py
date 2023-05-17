@@ -27,6 +27,11 @@ class CWNET:
                 if genotypes[_][site] == 1:
                     converted_data[site].append(phenotypes[_])
 
+        unordered_list = [[_,
+                           average(converted_data[_]) if len(converted_data[_]) >= 1 else 0,
+                           std(converted_data[_]) if len(converted_data[_]) >= 1 else 0]
+                          for _ in range(total_site_cnt)]
+        '''
         self.__nodes = {}
 
         avg_list = [average(converted_data[_]) if len(converted_data[_]) >= 1 else 0 for _ in range(total_site_cnt)]
@@ -45,11 +50,12 @@ class CWNET:
         for site in sorted(converted_data, key=lambda x: [avg_list[x], -std_list[x]]):
             self.__nodes[site] = idx
             idx += 1
+        '''
 
         converted_data = {}
 
-        for idx1 in range(len(self.__allele_name)-1):
-            for idx2 in range(idx1+1, len(self.__allele_name)):
+        for idx1 in range(len(self.__allele_name) - 1):
+            for idx2 in range(idx1 + 1, len(self.__allele_name)):
                 pair = tuple([idx1, idx2])
                 if pair not in converted_data:
                     converted_data[pair] = []
@@ -58,6 +64,11 @@ class CWNET:
                     if genotype[idx1] == genotype[idx2] == 1:
                         converted_data[pair].append(phenotypes[_])
 
+        for pair in converted_data:
+            unordered_list.append([pair,
+                                   average(converted_data[pair] if len(converted_data[pair]) > 0 else 0),
+                                   std(converted_data[pair]) if len(converted_data[pair]) > 1 else 0])
+        '''
         self.__edges = {}
 
         avg_db = {pair: average(converted_data[pair]) if len(converted_data[pair]) > 0 else 0
@@ -81,6 +92,42 @@ class CWNET:
                 self.__edges[idx1] = {}
             self.__edges[idx1][idx2] = idx
             idx += 1
+        '''
+
+        min_avg = unordered_list[0][1]
+        max_avg = unordered_list[0][1]
+
+        min_std = unordered_list[0][2]
+        max_std = unordered_list[0][2]
+
+        for _, avg, stdv in unordered_list:
+            if avg < min_avg:
+                min_avg = avg
+            if avg > max_avg:
+                max_avg = avg
+            if stdv < min_std:
+                min_std = stdv
+            if stdv > max_std:
+                max_std = stdv
+
+        mm_avg = max_avg - min_avg + 1
+        mm_std = max_std - min_std + 1
+
+        for _ in range(len(unordered_list)):
+            unordered_list[_][1] = int((unordered_list[_][1] - min_avg)*100./mm_avg)
+            unordered_list[_][2] = int((unordered_list[_][2] - min_std)*100./mm_std)
+
+        self.__nodes = {}
+        self.__edges = {}
+        # average higher and stdev lower is better
+        for _, avg, stdv in sorted(unordered_list, key=lambda x: [x[1], -x[2]]):
+            if isinstance(_, int):
+                self.__nodes[_] = avg+(1-stdv/100.)
+            else:
+                idx1, idx2 = _
+                if idx1 not in self.__edges:
+                    self.__edges[idx1] = {}
+                self.__edges[idx1][idx2] = avg+(1-stdv/100.)
 
     def calc_score(self, data):
         score = 0
@@ -92,8 +139,8 @@ class CWNET:
         for idx in available_sites:
             score += self.__nodes[idx]
 
-        for i in range(len(available_sites)-1):
-            for j in range(i+1, len(available_sites)):
+        for i in range(len(available_sites) - 1):
+            for j in range(i + 1, len(available_sites)):
                 score += self.__edges[available_sites[i]][available_sites[j]]
         return score
 
@@ -104,8 +151,8 @@ class CWNET:
         for idx in range(len(self.__allele_name)):
             node_weight.append([self.__allele_name[idx], self.__nodes[idx]])
 
-        for idx1 in range(len(self.__allele_name)-1):
-            for idx2 in range(idx1+1, len(self.__allele_name)):
+        for idx1 in range(len(self.__allele_name) - 1):
+            for idx2 in range(idx1 + 1, len(self.__allele_name)):
                 edge_weight.append([self.__allele_name[idx1], self.__allele_name[idx2], self.__edges[idx1][idx2]])
 
         # generate additional information of weight of nodes and weight of edges, sorted by weight descend
