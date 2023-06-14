@@ -8,9 +8,10 @@ from os import getpid
 
 
 class XGB:
-    def __init__(self, in_file, weight_file, out_file):
+    def __init__(self, in_file, weight_file, is_lower_better, out_file):
         self.__in_file = in_file
         self.__weight_file = weight_file
+        self.__is_lower_better = is_lower_better
         self.__out_file = out_file
         self.__type_info = None
         self.__allele_name = None
@@ -57,7 +58,7 @@ class XGB:
 
         # generate additional information of importance of each site, sorted by importance descend
         additional_info = ["#\n# Nodes importance"]
-        for _ in sorted(node_coefficients, key=lambda x: x[-1], reverse=True):
+        for _ in sorted(node_coefficients, key=lambda x: x[-1], reverse=(not self.__is_lower_better)):
             additional_info.append("# %s" % (' '.join(map(str, _))))
 
         return additional_info
@@ -74,7 +75,7 @@ class XGB:
         Message.info("\tPID:%d Starting XGBoost" % getpid())
         self.__model_train(genotypes, phenotypes)
         Message.info("\tPID:%d Running SA" % getpid())
-        sa = SA(self.__type_info, self.predict, iterate=100, alpha=0.99)
+        sa = SA(self.__type_info, self.predict, self.__is_lower_better, iterate=100, alpha=0.99)
         sa.run()
         best_sa_data = sa.data
 

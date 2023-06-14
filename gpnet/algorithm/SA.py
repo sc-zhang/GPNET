@@ -3,13 +3,14 @@ from numpy import random, exp, sum
 
 
 class SA:
-    def __init__(self, type_info, func, iterate=100, t0=100, t_final=0.01, alpha=0.99):
+    def __init__(self, type_info, func, is_lower_better, iterate=100, t0=100, t_final=0.01, alpha=0.99):
         self.__type_info = type_info
         self.__site_cnt = len(type_info)
         self.__inc_type_info = [0]
         for type_cnt in self.__type_info:
             self.__inc_type_info.append(self.__inc_type_info[-1]+type_cnt)
         self.__func = func
+        self.__is_lower_better = is_lower_better
         self.__iterate = iterate
         self.__t0 = t0
         self.__t_final = t_final
@@ -35,14 +36,24 @@ class SA:
         return new_data
 
     def __metrospolis(self, f, f_new):
-        if f_new >= f:
-            return 1
-        else:
-            p = exp((f_new - f) / self.__t)
+        if self.__is_lower_better:
+            if f_new <= f:
+                return 1
+            else:
+                p = exp((f - f_new) / self.__t)
             if random.rand() < p:
                 return 1
             else:
                 return 0
+        else:
+            if f_new >= f:
+                return 1
+            else:
+                p = exp((f_new - f) / self.__t)
+                if random.rand() < p:
+                    return 1
+                else:
+                    return 0
 
     def run(self):
         while self.__t > self.__t_final:
