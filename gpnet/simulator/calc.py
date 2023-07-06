@@ -2,7 +2,7 @@ from numpy import random
 
 
 def calc_pheno(genotype, single_weight, multi_weight):
-    __RAND_EFFECT = [-100, 100]
+    __RAND_EFFECT = [0, 100]
 
     multi_site_effect = 0
     matches = set()
