@@ -12,7 +12,7 @@ class Simulator:
         self.__total_type_cnt = 0
 
         self.__NOISE_EFFECT = [0, 20]
-        self.__NORMAL_EFFECT = [0, 100]
+        self.__NORMAL_EFFECT = [50, 100]
 
         self.genotypes = None
         self.type_info = None
@@ -78,23 +78,30 @@ class Simulator:
                 # the last type is set as lost, means it must not appear in co-effect sites
                 tmp_site_with_types = []
 
-                contain_noise_site = False
                 for site in tmp_sites:
                     # the co-effect must not appear while one site is marked as lost
                     site_with_type_idx = site + random.randint(0, 1 if self.type_info[site] == 1 else
                                                                self.type_info[site] - 1)
 
-                    if site_with_type_idx in noise_sites:
-                        contain_noise_site = True
                     tmp_site_with_types.append(site_with_type_idx)
 
-                # if the co-effect sites contain noise site, the co-effect is also simulate with NOISE EFFECT range
-                if contain_noise_site:
-                    self.multi_weight[co_site_cnt][tuple(sorted(tmp_site_with_types))] = \
-                        random.randint(self.__NOISE_EFFECT[0], self.__NOISE_EFFECT[1])
+                # simulate additive effect and epistatic effect
+                if random.random() < 1./co_site_cnt:
+                    effect_type = "add"
                 else:
-                    self.multi_weight[co_site_cnt][tuple(sorted(tmp_site_with_types))] = \
-                        random.randint(self.__NORMAL_EFFECT[0], self.__NORMAL_EFFECT[1])
+                    effect_type = "epi"
+
+                curr_effect = 0
+                if effect_type == "add":
+                    for _ in tmp_site_with_types:
+                        if _ not in noise_sites:
+                            curr_effect += self.single_weight[_]
+                else:
+                    for _ in tmp_site_with_types:
+                        if _ not in noise_sites:
+                            if curr_effect < self.single_weight[_]:
+                                curr_effect = self.single_weight[_]
+                self.multi_weight[co_site_cnt][tuple(sorted(tmp_site_with_types))] = curr_effect
 
     def sim_phenotypes(self):
         self.phenotypes = array([0 for _ in range(self.__sample_cnt)])
