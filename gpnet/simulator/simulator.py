@@ -27,7 +27,7 @@ class Simulator:
         for _ in range(self.__site_cnt):
             self.type_info.append(random.randint(1, self.__max_type_cnt + 2))
         '''
-        self.type_info = random.poisson(lam=self.__max_type_cnt / 2.5, size=self.__site_cnt)
+        self.type_info = random.poisson(lam=self.__max_type_cnt / 3., size=self.__site_cnt)
 
         for _ in range(len(self.type_info)):
             if self.type_info[_] > self.__max_type_cnt:
@@ -43,7 +43,7 @@ class Simulator:
         self.genotypes = array([[0 for __ in range(self.__total_type_cnt)] for _ in range(self.__sample_cnt)])
         for smp_idx in range(self.__sample_cnt):
             for var_idx in range(self.__site_cnt):
-                random_idx = max(min(random.poisson(lam=self.type_info[var_idx]/1.5),
+                random_idx = max(min(random.poisson(lam=self.type_info[var_idx]/1.4),
                                  self.type_info[var_idx]-1),
                                  0)
                 self.genotypes[smp_idx][random_idx + inc_list[var_idx]] = 1
