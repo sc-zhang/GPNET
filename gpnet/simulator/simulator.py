@@ -43,9 +43,9 @@ class Simulator:
         self.genotypes = array([[0 for __ in range(self.__total_type_cnt)] for _ in range(self.__sample_cnt)])
         for smp_idx in range(self.__sample_cnt):
             for var_idx in range(self.__site_cnt):
-                random_idx = max(min(random.poisson(lam=self.type_info[var_idx]/1.4),
-                                 self.type_info[var_idx]-1),
-                                 0)
+                random_idx = random.poisson(lam=self.type_info[var_idx]/1.4)
+                if random_idx < 0 or random_idx >= self.type_info[var_idx]:
+                    random_idx = 0
                 self.genotypes[smp_idx][random_idx + inc_list[var_idx]] = 1
 
     def sim_site_effects(self):
