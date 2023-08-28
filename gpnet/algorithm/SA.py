@@ -2,6 +2,7 @@ from copy import deepcopy
 from numpy import random, exp, sum
 from gpnet.io.data_io import DataSaver
 
+
 class SA:
     def __init__(self, type_info, allele_name, outfile,
                  func, is_lower_better, iterate=100, t0=100, t_final=0.01, alpha=0.99):
