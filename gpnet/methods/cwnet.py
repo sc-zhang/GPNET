@@ -179,7 +179,8 @@ class CWNET:
         Message.info("\tPID:%d Generating network" % getpid())
         self.generate_network(genotypes, phenotypes)
         Message.info("\tPID:%d Running SA" % getpid())
-        sa = SA(self.__type_info, self.calc_score, self.__is_lower_better, iterate=100, alpha=0.99)
+        sa = SA(self.__type_info, self.__allele_name, self.__out_file,
+                self.calc_score, self.__is_lower_better, iterate=100, alpha=0.99)
         sa.run()
         best_sa_data = sa.data
 

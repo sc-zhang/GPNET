@@ -1,10 +1,13 @@
 from copy import deepcopy
 from numpy import random, exp, sum
-
+from gpnet.io.data_io import DataSaver
 
 class SA:
-    def __init__(self, type_info, func, is_lower_better, iterate=100, t0=100, t_final=0.01, alpha=0.99):
+    def __init__(self, type_info, allele_name, outfile,
+                 func, is_lower_better, iterate=100, t0=100, t_final=0.01, alpha=0.99):
         self.__type_info = type_info
+        self.__allele_name = allele_name
+        self.__outfile = outfile+".iter"
         self.__site_cnt = len(type_info)
         self.__inc_type_info = [0]
         for type_cnt in self.__type_info:
@@ -18,6 +21,8 @@ class SA:
         self.__alpha = alpha
         self.__total_type_cnt = sum(type_info)
         self.data = [0 for _ in range(self.__total_type_cnt)]
+        self.__iter_data = []
+        self.__iter_score = []
         # default type is first one
         for _ in self.__inc_type_info[:-1]:
             self.data[_] = 1
@@ -63,5 +68,11 @@ class SA:
                 f_new = self.__func(new_data)
                 if self.__metrospolis(f, f_new):
                     self.data = deepcopy(new_data)
+                    if not self.__iter_data or self.data != self.__iter_data[-1]:
+                        self.__iter_data.append(self.data)
+                        self.__iter_score.append(f_new)
 
             self.__t = self.__t * self.__alpha
+
+        ds = DataSaver(self.__outfile)
+        ds.save_iter(self.__type_info, self.__allele_name, self.__iter_data, self.__iter_score)

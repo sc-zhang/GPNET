@@ -19,6 +19,18 @@ class DataSaver:
             if additional_info:
                 fout.write("%s\n" % ('\n'.join(additional_info)))
 
+    def save_iter(self, type_info, allele_name, genotypes, score):
+        # type_info is like:
+        # [site1_type_count, site2_type_count, ..., siteN_type_count]
+        with open(self.__out_file, 'w') as fout:
+            fout.write("#TypeInfo\t%s\n" % ('\t'.join(map(str, type_info))))
+            fout.write("#Iteration\t")
+            for _ in allele_name:
+                fout.write("%s\t" % _)
+            fout.write("Score\n")
+            for _ in range(len(score)):
+                fout.write("%d\t%s\t%s\n" % (_ + 1, '\t'.join(list(map(str, list(genotypes[_])))), str(score[_])))
+
     def save_sim_data(self, type_info, genotypes, phenotypes):
         # type_info is like:
         # [site1_type_count, site2_type_count, ..., siteN_type_count]

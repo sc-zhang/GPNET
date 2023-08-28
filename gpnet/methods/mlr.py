@@ -47,7 +47,8 @@ class MLR:
         y_train = phenotypes
         self.__model = self.__lrg.fit(X_train, y_train)
         Message.info("\tPID:%d Running SA" % getpid())
-        sa = SA(self.__type_info, self.predict, self.__is_lower_better, iterate=100, alpha=0.99)
+        sa = SA(self.__type_info, self.__allele_name, self.__out_file,
+                self.predict, self.__is_lower_better, iterate=100, alpha=0.99)
         sa.run()
         best_sa_data = sa.data
 

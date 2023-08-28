@@ -75,7 +75,8 @@ class XGB:
         Message.info("\tPID:%d Starting XGBoost" % getpid())
         self.__model_train(genotypes, phenotypes)
         Message.info("\tPID:%d Running SA" % getpid())
-        sa = SA(self.__type_info, self.predict, self.__is_lower_better, iterate=100, alpha=0.99)
+        sa = SA(self.__type_info, self.__allele_name, self.__out_file,
+                self.predict, self.__is_lower_better, iterate=100, alpha=0.99)
         sa.run()
         best_sa_data = sa.data
 
