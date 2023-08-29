@@ -43,9 +43,9 @@ class MLR:
         self.__allele_name = dl.allele_name
 
         Message.info("\tPID:%d Starting multi linear regression" % getpid())
-        X_train = genotypes
+        x_train = genotypes
         y_train = phenotypes
-        self.__model = self.__lrg.fit(X_train, y_train)
+        self.__model = self.__lrg.fit(x_train, y_train)
         Message.info("\tPID:%d Running SA" % getpid())
         sa = SA(self.__type_info, self.__allele_name, self.__out_file,
                 self.predict, self.__is_lower_better, iterate=100, alpha=0.99)

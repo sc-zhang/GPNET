@@ -75,8 +75,8 @@ class Simulator:
         # simulate 2 to 9 sites co-effect
         for co_site_cnt in range(2, 10):
             self.multi_weight[co_site_cnt] = {}
-            lower = self.__total_type_cnt * .1
-            upper = self.__total_type_cnt * .25 + 1
+            lower = int(self.__total_type_cnt * .1)
+            upper = int(self.__total_type_cnt * .25 + 1)
             comb_cnt = random.randint(lower, upper)
 
             while len(self.multi_weight[co_site_cnt]) < comb_cnt:

@@ -3,7 +3,7 @@ from gpnet.algorithm.SA import SA
 from gpnet.io.data_io import DataLoader, DataSaver
 from gpnet.io.message import Message
 from os import getpid
-from numpy import sum, average, std, log
+from numpy import sum, average, std
 
 
 class CWNET:
