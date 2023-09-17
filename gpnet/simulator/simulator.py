@@ -23,17 +23,18 @@ class Simulator:
     def sim_genotypes(self):
         # random set variant type count for each variant site
         self.type_info = []
-        '''
+
         for _ in range(self.__site_cnt):
             self.type_info.append(random.randint(1, self.__max_type_cnt + 2))
         '''
         self.type_info = random.poisson(lam=self.__max_type_cnt / 3., size=self.__site_cnt)
-
+        
         for _ in range(len(self.type_info)):
             if self.type_info[_] > self.__max_type_cnt:
                 self.type_info[_] = self.__max_type_cnt
             elif self.type_info[_] <= 0:
                 self.type_info[_] = 1
+        '''
         self.__total_type_cnt = sum(self.type_info)
 
         inc_list = [0]
@@ -43,10 +44,13 @@ class Simulator:
         self.genotypes = array([[0 for __ in range(self.__total_type_cnt)] for _ in range(self.__sample_cnt)])
         for smp_idx in range(self.__sample_cnt):
             for var_idx in range(self.__site_cnt):
+                self.genotypes[smp_idx][random.randint(0, self.type_info[var_idx]) + inc_list[var_idx]] = 1
+                '''
                 random_idx = random.poisson(lam=self.type_info[var_idx]/1.4)
                 if random_idx < 0 or random_idx >= self.type_info[var_idx]:
                     random_idx = 0
                 self.genotypes[smp_idx][random_idx + inc_list[var_idx]] = 1
+                '''
 
     def sim_site_effects(self):
         # simulate single site effect
