@@ -11,8 +11,8 @@ class Simulator:
         self.__sample_cnt = sample_cnt
         self.__total_type_cnt = 0
 
-        self.__NOISE_EFFECT = [0, 20]
-        self.__NORMAL_EFFECT = [50, 100]
+        self.__NOISE_EFFECT = [-20, 20]
+        self.__NORMAL_EFFECT = [-200, 200]
 
         self.genotypes = None
         self.type_info = None
