@@ -11,8 +11,8 @@ class Simulator:
         self.__sample_cnt = sample_cnt
         self.__total_type_cnt = 0
 
-        self.__NOISE_EFFECT = [0, 20] #[-20, 20]
-        self.__NORMAL_EFFECT = [21, 200] #[-200, 200]
+        self.__NOISE_EFFECT = [0, 20]  # [-20, 20]
+        self.__NORMAL_EFFECT = [21, 200]  # [-200, 200]
 
         self.genotypes = None
         self.type_info = None
@@ -97,12 +97,12 @@ class Simulator:
                 for site in tmp_sites:
                     # the co-effect must not appear while one site is marked as lost
                     site_with_type_idx = site + random.randint(0, 1 if self.type_info[site] == 1 else
-                                                               self.type_info[site] - 1)
+                    self.type_info[site] - 1)
 
                     tmp_site_with_types.append(site_with_type_idx)
 
                 # simulate additive effect and epistatic effect
-                if random.random() < 1./co_site_cnt:
+                if random.random() < 1. / co_site_cnt:
                     effect_type = "add"
                 else:
                     effect_type = "epi"
