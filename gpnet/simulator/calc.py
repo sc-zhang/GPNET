@@ -30,5 +30,6 @@ def calc_pheno(genotype, single_weight, multi_weight):
             single_site_effect += genotype[_] * single_weight[_]
 
     # Simulate environment effect
-    pheno = single_site_effect + multi_site_effect + random.randint(__RAND_EFFECT[0], __RAND_EFFECT[1])
+    # pheno = single_site_effect + multi_site_effect + random.randint(__RAND_EFFECT[0], __RAND_EFFECT[1])
+    pheno = single_site_effect + multi_site_effect + random.normal(loc=0, scale=__RAND_EFFECT[1])
     return pheno

@@ -24,17 +24,18 @@ class Simulator:
         # random set variant type count for each variant site
         self.type_info = []
 
+        '''
         for _ in range(self.__site_cnt):
             self.type_info.append(random.randint(1, self.__max_type_cnt + 2))
         '''
-        self.type_info = random.poisson(lam=self.__max_type_cnt / 3., size=self.__site_cnt)
-        
+        self.type_info = random.binomial(self.__max_type_cnt + 1, 0.5, self.__site_cnt)
+
         for _ in range(len(self.type_info)):
             if self.type_info[_] > self.__max_type_cnt:
                 self.type_info[_] = self.__max_type_cnt
             elif self.type_info[_] <= 0:
                 self.type_info[_] = 1
-        '''
+
         self.__total_type_cnt = sum(self.type_info)
 
         inc_list = [0]
@@ -68,12 +69,19 @@ class Simulator:
                     # sign = 1 if random.rand() < 0.5 else -1
                     sign = 1
                     if random.rand() < self.__noise_ratio:
+                        '''
                         self.single_weight[site_effect_idx] = sign * random.randint(self.__NOISE_EFFECT[0],
                                                                                     self.__NOISE_EFFECT[1])
+                        '''
+                        self.single_weight[site_effect_idx] = random.normal(loc=0, scale=self.__NOISE_EFFECT[1])
                         noise_sites.add(site_effect_idx)
                     else:
+                        '''
                         self.single_weight[site_effect_idx] = sign * random.randint(self.__NORMAL_EFFECT[0],
                                                                                     self.__NORMAL_EFFECT[1])
+                        '''
+                        self.single_weight[site_effect_idx] = random.normal(loc=0, scale=self.__NORMAL_EFFECT[1])
+
                 site_effect_idx += 1
 
         # simulate multi sites co-effect
@@ -97,8 +105,9 @@ class Simulator:
 
                 for site in tmp_sites:
                     # the co-effect must not appear while one site is marked as lost
-                    site_with_type_idx = site + random.randint(0, 1 if self.type_info[site] == 1 else
-                    self.type_info[site] - 1)
+                    site_with_type_idx = site + random.randint(0,
+                                                               1 if self.type_info[site] == 1
+                                                               else self.type_info[site] - 1)
 
                     tmp_site_with_types.append(site_with_type_idx)
 
