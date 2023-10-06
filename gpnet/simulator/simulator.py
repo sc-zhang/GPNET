@@ -3,10 +3,10 @@ from gpnet.simulator.calc import calc_pheno
 
 
 class Simulator:
-    def __init__(self, site_cnt, max_type_cnt, noise_ratio, sample_cnt):
+    def __init__(self, site_cnt, avg_type_cnt, noise_ratio, sample_cnt):
         random.seed()
         self.__site_cnt = site_cnt
-        self.__max_type_cnt = max_type_cnt
+        self.__avg_type_cnt = avg_type_cnt
         self.__noise_ratio = noise_ratio
         self.__sample_cnt = sample_cnt
         self.__total_type_cnt = 0
@@ -26,13 +26,14 @@ class Simulator:
 
         '''
         for _ in range(self.__site_cnt):
-            self.type_info.append(random.randint(1, self.__max_type_cnt + 2))
+            self.type_info.append(random.randint(1, self.__avg_type_cnt * 2 + 2))
         '''
-        self.type_info = random.binomial(self.__max_type_cnt + 1, 0.5, self.__site_cnt)
+        self.type_info = random.binomial(self.__avg_type_cnt * 2 + 1, 0.5, self.__site_cnt)
 
+        max_type_cnt = self.__avg_type_cnt * 2 + 1
         for _ in range(len(self.type_info)):
-            if self.type_info[_] > self.__max_type_cnt:
-                self.type_info[_] = self.__max_type_cnt
+            if self.type_info[_] > max_type_cnt:
+                self.type_info[_] = max_type_cnt
             elif self.type_info[_] <= 0:
                 self.type_info[_] = 1
 

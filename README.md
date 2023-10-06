@@ -38,7 +38,7 @@ sub commands:
 
 - simulator is used for simulating data for testing our methods.
 ```bash
-usage: gpnet.py simulator [-h] -o OUTDIR [-r ROUND] [-s SITES] [-m MAX_TYPES] [-c SAMPLES] [-t THREAD]
+usage: gpnet.py simulator [-h] -o OUTDIR [-r ROUND] [-s SITES] [-a AVG_TYPES] [-n NOISE] [-c SAMPLES] [-t THREAD]
 
 options:
   -h, --help            show this help message and exit
@@ -48,8 +48,10 @@ options:
                         Simulate round, default=1000
   -s SITES, --sites SITES
                         Simulate variant site count, default=100
-  -m MAX_TYPES, --max_types MAX_TYPES
-                        Max variant types, default=10
+  -a AVG_TYPES, --avg_types AVG_TYPES
+                        Average of variant types, default=5
+  -n NOISE, --noise NOISE
+                        Noise ratio of sites, these sites have lower genomic valuethan others , default=0.0 and less than 1
   -c SAMPLES, --samples SAMPLES
                         Simulate sample count, default=100
   -t THREAD, --thread THREAD

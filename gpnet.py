@@ -12,7 +12,7 @@ def main():
     parser_simulator.add_argument('-r', '--round', help='Simulate round, default=1000', type=int, default=1000)
     parser_simulator.add_argument('-s', '--sites', help='Simulate variant site count, default=100',
                                   type=int, default=100)
-    parser_simulator.add_argument('-m', '--max_types', help='Max variant types, default=10', type=int, default=10)
+    parser_simulator.add_argument('-a', '--avg_types', help='Average of variant types, default=5', type=int, default=5)
     parser_simulator.add_argument('-n', '--noise',
                                   help='Noise ratio of sites, these sites have lower genomic value'
                                        'than others , default=0.0 and less than 1',

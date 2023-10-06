@@ -5,10 +5,10 @@ from os import getpid, getcwd, chdir, path, makedirs
 from pathos.multiprocessing import Pool
 
 
-def each_round(round_idx, site_cnt, max_type_cnt, noise_ratio, sample_cnt):
+def each_round(round_idx, site_cnt, avg_type_cnt, noise_ratio, sample_cnt):
     Message.info("Round %d" % (round_idx + 1))
     Message.info("\tPID:%d Generating genotypes" % getpid())
-    simulator = Simulator(site_cnt, max_type_cnt, noise_ratio, sample_cnt)
+    simulator = Simulator(site_cnt, avg_type_cnt, noise_ratio, sample_cnt)
     simulator.sim_genotypes()
     genotypes = simulator.genotypes
     type_info = simulator.type_info
@@ -39,7 +39,7 @@ def main(args):
     out_dir = args.outdir
     round_cnt = args.round
     site_cnt = args.sites
-    max_type_cnt = args.max_types
+    avg_type_cnt = args.avg_types
     noise_ratio = args.noise
     sample_cnt = args.samples
     thread = args.thread
@@ -55,7 +55,7 @@ def main(args):
     Message.info("Simulating")
     pool = Pool(processes=thread)
     for _ in range(round_cnt):
-        pool.apply_async(each_round, (_, site_cnt, max_type_cnt, noise_ratio, sample_cnt, ))
+        pool.apply_async(each_round, (_, site_cnt, avg_type_cnt, noise_ratio, sample_cnt, ))
     pool.close()
     pool.join()
     chdir(cur_dir)
