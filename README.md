@@ -14,8 +14,8 @@ Python modules:
 ## Installation
 ```bash
 cd /path/to/install
-git clone https://github.com/sc-zhang/GPNet.git
-cd GPNet
+git clone https://github.com/sc-zhang/GPNET.git
+cd GPNET
 chmod +x gpnet.py
 # Optional
 echo 'export PATH=/path/to/install/AlleleFinder/bin:$PATH' >> ~/.bash_profile
