@@ -60,7 +60,7 @@ options:
 
 - predict is used for predicting best genotypes with phenotypes from population.
 ```bash
-usage: gpnet.py predictor [-h] -i INPUT [-w WEIGHT] -o OUTPUT [--single] [-m METHOD] [-l] [-t THREAD]
+usage: gpnet.py predictor [-h] -i INPUT [-w WEIGHT] -o OUTPUT [--single] [-m {CWNET,MLR,XGB}] [-l] [-t THREAD]
 
 options:
   -h, --help            show this help message and exit
@@ -71,8 +71,8 @@ options:
   -o OUTPUT, --output OUTPUT
                         Output file or directory
   --single              Input file is a single sample file
-  -m METHOD, --method METHOD
-                        Predict method, can be: MLR, CWNET, XGB, default=MLR
+  -m {CWNET,MLR,XGB}, --method {CWNET,MLR,XGB}
+                        Predict method, can be: CWNET, MLR, XGB, default=CWNET
   -l, --lower           Means lower phenotype is better, if this parameter is setting
   -t THREAD, --thread THREAD
                         Threads, default=10, if input single file, auto set to 1
