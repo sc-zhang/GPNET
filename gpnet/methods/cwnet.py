@@ -27,11 +27,16 @@ class CWNET:
             for _ in range(len(genotypes)):
                 if genotypes[_][site] == 1:
                     converted_data[site].append(phenotypes[_])
-
-        unordered_list = [[_,
-                           average(converted_data[_]) if len(converted_data[_]) >= 1 else 0,
-                           std(converted_data[_]) if len(converted_data[_]) >= 1 else 0]
-                          for _ in range(total_site_cnt)]
+        if self.__is_lower_better:
+            unordered_list = [[_,
+                               average(converted_data[_]) if len(converted_data[_]) >= 1 else 100,
+                               std(converted_data[_]) if len(converted_data[_]) >= 1 else 100]
+                              for _ in range(total_site_cnt)]
+        else:
+            unordered_list = [[_,
+                               average(converted_data[_]) if len(converted_data[_]) >= 1 else 0,
+                               std(converted_data[_]) if len(converted_data[_]) >= 1 else 0]
+                              for _ in range(total_site_cnt)]
         '''
         self.__nodes = {}
 
@@ -84,9 +89,14 @@ class CWNET:
         '''
 
         for pair in converted_data:
-            unordered_list.append([pair,
-                                   average(converted_data[pair] if len(converted_data[pair]) > 0 else 0),
-                                   std(converted_data[pair]) if len(converted_data[pair]) > 1 else 0])
+            if self.__is_lower_better:
+                unordered_list.append([pair,
+                                       average(converted_data[pair] if len(converted_data[pair]) > 0 else 100),
+                                       std(converted_data[pair]) if len(converted_data[pair]) > 1 else 100])
+            else:
+                unordered_list.append([pair,
+                                       average(converted_data[pair] if len(converted_data[pair]) > 0 else 0),
+                                       std(converted_data[pair]) if len(converted_data[pair]) > 1 else 0])
         '''
         self.__edges = {}
 
