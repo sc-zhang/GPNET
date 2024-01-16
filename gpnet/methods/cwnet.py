@@ -54,7 +54,24 @@ class CWNET:
         '''
 
         converted_data = {}
+        inc_type_info = [0]
+        for _ in self.__type_info:
+            inc_type_info.append(inc_type_info[-1]+_)
 
+        for site1 in range(len(self.__type_info)-1):
+            for site2 in range(site1+1, len(self.__type_info)):
+                for type1 in range(self.__type_info[site1]):
+                    for type2 in range(self.__type_info[site2]):
+                        idx1 = inc_type_info[site1]+type1
+                        idx2 = inc_type_info[site2]+type2
+                        pair = tuple([idx1, idx2])
+                        if pair not in converted_data:
+                            converted_data[pair] = []
+                        for _ in range(len(genotypes)):
+                            genotype = genotypes[_]
+                            if genotype[idx1] == genotype[idx2] == 1:
+                                converted_data[pair].append(phenotypes[_])
+        '''
         for idx1 in range(len(self.__allele_name) - 1):
             for idx2 in range(idx1 + 1, len(self.__allele_name)):
                 pair = tuple([idx1, idx2])
@@ -64,6 +81,7 @@ class CWNET:
                     genotype = genotypes[_]
                     if genotype[idx1] == genotype[idx2] == 1:
                         converted_data[pair].append(phenotypes[_])
+        '''
 
         for pair in converted_data:
             unordered_list.append([pair,
@@ -151,9 +169,12 @@ class CWNET:
 
         for idx in range(len(self.__allele_name)):
             node_weight.append([self.__allele_name[idx], self.__nodes[idx]])
-
+        '''
         for idx1 in range(len(self.__allele_name) - 1):
             for idx2 in range(idx1 + 1, len(self.__allele_name)):
+        '''
+        for idx1 in sorted(self.__edges):
+            for idx2 in sorted(self.__edges[idx1]):
                 edge_weight.append([self.__allele_name[idx1], self.__allele_name[idx2], self.__edges[idx1][idx2]])
 
         # generate additional information of weight of nodes and weight of edges, sorted by weight descend
