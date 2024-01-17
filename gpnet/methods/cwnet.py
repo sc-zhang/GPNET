@@ -61,14 +61,14 @@ class CWNET:
         converted_data = {}
         inc_type_info = [0]
         for _ in self.__type_info:
-            inc_type_info.append(inc_type_info[-1]+_)
+            inc_type_info.append(inc_type_info[-1] + _)
 
-        for site1 in range(len(self.__type_info)-1):
-            for site2 in range(site1+1, len(self.__type_info)):
+        for site1 in range(len(self.__type_info) - 1):
+            for site2 in range(site1 + 1, len(self.__type_info)):
                 for type1 in range(self.__type_info[site1]):
                     for type2 in range(self.__type_info[site2]):
-                        idx1 = inc_type_info[site1]+type1
-                        idx2 = inc_type_info[site2]+type2
+                        idx1 = inc_type_info[site1] + type1
+                        idx2 = inc_type_info[site2] + type2
                         pair = tuple([idx1, idx2])
                         if pair not in converted_data:
                             converted_data[pair] = []
@@ -143,20 +143,26 @@ class CWNET:
         mm_std = max_std - min_std + 1
 
         for _ in range(len(unordered_list)):
-            unordered_list[_][1] = int((unordered_list[_][1] - min_avg)*100./mm_avg)
-            unordered_list[_][2] = int((unordered_list[_][2] - min_std)*100./mm_std)
+            unordered_list[_][1] = int((unordered_list[_][1] - min_avg) * 100. / mm_avg)
+            unordered_list[_][2] = int((unordered_list[_][2] - min_std) * 100. / mm_std)
 
         self.__nodes = {}
         self.__edges = {}
         # average higher and stdev lower is better
         for _, avg, stdv in sorted(unordered_list, key=lambda x: [x[1], -x[2]]):
             if isinstance(_, int):
-                self.__nodes[_] = avg+(1-stdv/100.)
+                if self.__is_lower_better:
+                    self.__nodes[_] = avg + stdv / 100.
+                else:
+                    self.__nodes[_] = avg + (1 - stdv / 100.)
             else:
                 idx1, idx2 = _
                 if idx1 not in self.__edges:
                     self.__edges[idx1] = {}
-                self.__edges[idx1][idx2] = avg+(1-stdv/100.)
+                if self.__is_lower_better:
+                    self.__edges[idx1][idx2] = avg + stdv / 100.
+                else:
+                    self.__edges[idx1][idx2] = avg + (1 - stdv / 100.)
 
     def calc_score(self, data):
         score = 0
