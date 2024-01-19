@@ -163,7 +163,8 @@ class GraphLoader:
                 idx += 1
 
             edge_cnt = {}
-            for info in sorted(order_list):
+            for info in sorted(order_list,
+                               key=lambda x: x[0] if is_lower_better else (100 - int(x[0]) + (x[0] - int(x[0])))):
                 val = info[0]
                 if len(info) == 2:
                     symbol_size = (100 - int(val) + (val - int(val))) / 3. if is_lower_better else val / 3.
