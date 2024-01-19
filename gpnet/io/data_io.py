@@ -1,4 +1,5 @@
-from numpy import array
+from numpy import array, random
+from gpnet.algorithm.UnionFind import UnionFind
 
 
 class DataSaver:
@@ -105,3 +106,96 @@ class DataLoader:
                             self.multi_weight[sn] = {}
                     else:
                         self.multi_weight[sn][tuple(sorted(list(map(int, data))))] = cur_pheno
+
+
+class GraphLoader:
+    def __init__(self):
+        self.nodes = []
+        self.edges = []
+        self.categories = []
+
+    def load_data(self, in_file, is_lower_better):
+        is_nodes = False
+        is_edges = False
+        select_nodes = set()
+        order_list = []
+
+        with open(in_file, 'r') as fin:
+            for line in fin:
+                if line[0] == '#':
+                    if line.startswith("#Sample"):
+                        sample_list = line.strip().split()
+                        continue
+                    if line.startswith("# Nodes"):
+                        is_nodes = True
+                        continue
+                    if line.startswith("# Edges"):
+                        is_nodes = False
+                        is_edges = True
+                        continue
+                    if is_nodes:
+                        data = line.strip().split()
+                        if len(data) < 3:
+                            continue
+                        if data[1] in select_nodes:
+                            order_list.append([float(data[-1]), data[1]])
+                    elif is_edges:
+                        data = line.strip().split()
+                        if len(data) < 4:
+                            continue
+                        src = data[1]
+                        tgt = data[2]
+                        if src not in select_nodes or tgt not in select_nodes:
+                            continue
+                        order_list.append([float(data[-1]), src, tgt])
+
+                else:
+                    data = line.strip().split()
+                    for _ in range(1, len(data) - 1):
+                        if data[_] == '1':
+                            select_nodes.add(sample_list[_])
+
+            uf = UnionFind(len(select_nodes))
+            node_idx = {}
+            idx = 0
+            for node in select_nodes:
+                node_idx[node] = idx
+                idx += 1
+
+            edge_cnt = {}
+            for info in sorted(order_list):
+                val = info[0]
+                if len(info) == 2:
+                    symbol_size = (100 - int(val) + (val - int(val))) / 3. if is_lower_better else val / 3.
+                    self.nodes.append({"name": info[1],
+                                       "symbolSize": symbol_size,
+                                       "category": info[1],
+                                       "value": val,
+                                       "label": {"normal": {"show": "True"}}})
+                else:
+                    src = info[1]
+                    tgt = info[2]
+                    if src not in edge_cnt:
+                        edge_cnt[src] = 1
+                    if tgt not in edge_cnt:
+                        edge_cnt[tgt] = 1
+                    if uf.find(node_idx[src]) == uf.find(node_idx[tgt]):
+                        continue
+
+                    if random.random() < 1.0 / max(edge_cnt[src], edge_cnt[tgt]):
+                        edge_cnt[src] += 1
+                        edge_cnt[tgt] += 1
+                        uf.union(node_idx[src], node_idx[tgt])
+                        self.edges.append({'source': src, 'target': tgt, "value": val})
+
+            for info in sorted(order_list):
+                val = info[0]
+                if len(info) > 2:
+                    src = info[1]
+                    tgt = info[2]
+                    if uf.find(node_idx[src]) == uf.find(node_idx[tgt]):
+                        continue
+                    uf.union(node_idx[src], node_idx[tgt])
+                    self.edges.append({'source': src, 'target': tgt, "value": val})
+
+            self.categories = [{"name": _["name"]} for _ in self.nodes]
