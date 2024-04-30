@@ -43,16 +43,36 @@ class Simulator:
         for type_cnt in self.type_info:
             inc_list.append(inc_list[-1] + type_cnt)
 
+        '''
         self.genotypes = array([[0 for __ in range(self.__total_type_cnt)] for _ in range(self.__sample_cnt)])
         for smp_idx in range(self.__sample_cnt):
             for var_idx in range(self.__site_cnt):
                 self.genotypes[smp_idx][random.randint(0, self.type_info[var_idx]) + inc_list[var_idx]] = 1
-                '''
                 random_idx = random.poisson(lam=self.type_info[var_idx]/1.4)
                 if random_idx < 0 or random_idx >= self.type_info[var_idx]:
                     random_idx = 0
                 self.genotypes[smp_idx][random_idx + inc_list[var_idx]] = 1
-                '''
+        '''
+
+        self.genotypes = []
+        genotype_set = set()
+        for smp_idx in range(self.__sample_cnt):
+            genotype = [0 for _ in range(self.__total_type_cnt)]
+            for var_idx in range(self.__site_cnt):
+                genotype[random.randint(0, self.type_info[var_idx]) + inc_list[var_idx]] = 1
+
+            # avoid duplicate samples, if the choise less than sample count, it may cause deadloop, for that test_cnt is
+            # set as test times, max test should not over 10000 times.
+            test_cnt = 0
+            while tuple(genotype) in genotype_set and test_cnt < 10000:
+                genotype = [0 for _ in range(self.__total_type_cnt)]
+                for var_idx in range(self.__site_cnt):
+                    genotype[random.randint(0, self.type_info[var_idx]) + inc_list[var_idx]] = 1
+                test_cnt += 1
+
+            genotype_set.add(tuple(genotype))
+            self.genotypes.append(genotype)
+        self.genotypes = array(self.genotypes)
 
     def sim_site_effects(self):
         # simulate single site effect
