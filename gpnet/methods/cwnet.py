@@ -27,16 +27,12 @@ class CWNET:
             for _ in range(len(genotypes)):
                 if genotypes[_][site] == 1:
                     converted_data[site].append(phenotypes[_])
-        if self.__is_lower_better:
-            unordered_list = [[_,
-                               average(converted_data[_]) if len(converted_data[_]) >= 1 else 100,
-                               std(converted_data[_]) if len(converted_data[_]) >= 1 else 100]
-                              for _ in range(total_site_cnt)]
-        else:
-            unordered_list = [[_,
-                               average(converted_data[_]) if len(converted_data[_]) >= 1 else 0,
-                               std(converted_data[_]) if len(converted_data[_]) >= 1 else 0]
-                              for _ in range(total_site_cnt)]
+
+        unordered_list = [[_,
+                           average(converted_data[_]) if len(converted_data[_]) >= 1 else float('nan'),
+                           std(converted_data[_]) if len(converted_data[_]) >= 1 else float('nan')]
+                          for _ in range(total_site_cnt)]
+
         '''
         self.__nodes = {}
 
@@ -76,6 +72,7 @@ class CWNET:
                             genotype = genotypes[_]
                             if genotype[idx1] == genotype[idx2] == 1:
                                 converted_data[pair].append(phenotypes[_])
+
         '''
         for idx1 in range(len(self.__allele_name) - 1):
             for idx2 in range(idx1 + 1, len(self.__allele_name)):
@@ -89,14 +86,9 @@ class CWNET:
         '''
 
         for pair in converted_data:
-            if self.__is_lower_better:
-                unordered_list.append([pair,
-                                       average(converted_data[pair] if len(converted_data[pair]) > 0 else 100),
-                                       std(converted_data[pair]) if len(converted_data[pair]) > 1 else 100])
-            else:
-                unordered_list.append([pair,
-                                       average(converted_data[pair] if len(converted_data[pair]) > 0 else 0),
-                                       std(converted_data[pair]) if len(converted_data[pair]) > 1 else 0])
+            unordered_list.append([pair,
+                                   average(converted_data[pair]) if len(converted_data[pair]) > 0 else float('nan'),
+                                   std(converted_data[pair]) if len(converted_data[pair]) > 1 else float('nan')])
         '''
         self.__edges = {}
 
@@ -106,7 +98,7 @@ class CWNET:
         max_avg = max([avg_db[_] for _ in avg_db])
         mm = max_avg - min_avg + 1
         avg_db = {pair: int((avg_db[pair]-min_avg)*100./mm) for pair in avg_db}
-        
+
         std_db = {pair: std(converted_data[pair]) if len(converted_data[pair]) > 1 else 0
                   for pair in converted_data}
         min_std = min([std_db[_] for _ in std_db])
@@ -130,21 +122,31 @@ class CWNET:
         max_std = unordered_list[0][2]
 
         for _, avg, stdv in unordered_list:
-            if avg < min_avg:
+            if isnan(avg) or isnan(stdv):
+                continue
+            if avg < min_avg or isnan(min_avg):
                 min_avg = avg
-            if avg > max_avg:
+            if avg > max_avg or isnan(max_avg):
                 max_avg = avg
-            if stdv < min_std:
+            if stdv < min_std or isnan(min_std):
                 min_std = stdv
-            if stdv > max_std:
+            if stdv > max_std or isnan(max_std):
                 max_std = stdv
 
         mm_avg = max_avg - min_avg + 1
         mm_std = max_std - min_std + 1
 
         for _ in range(len(unordered_list)):
-            unordered_list[_][1] = int((unordered_list[_][1] - min_avg) * 100. / mm_avg)
-            unordered_list[_][2] = int((unordered_list[_][2] - min_std) * 100. / mm_std)
+            if self.__is_lower_better:
+                if isnan(unordered_list[_][1]) or isnan(unordered_list[_][2]):
+                    unordered_list[_][1] = max_avg
+                    unordered_list[_][2] = max_std
+            else:
+                if isnan(unordered_list[_][1]) or isnan(unordered_list[_][2]):
+                    unordered_list[_][1] = min_avg
+                    unordered_list[_][2] = min_std
+            unordered_list[_][1] = int((unordered_list[_][1] - min_avg) * 99. / mm_avg)
+            unordered_list[_][2] = int((unordered_list[_][2] - min_std) * 99. / mm_std)
 
         self.__nodes = {}
         self.__edges = {}
@@ -154,7 +156,7 @@ class CWNET:
                 if self.__is_lower_better:
                     self.__nodes[_] = avg + stdv / 100.
                 else:
-                    self.__nodes[_] = avg + (1 - stdv / 100.)
+                    self.__nodes[_] = avg + (0.99 - stdv / 100.)
             else:
                 idx1, idx2 = _
                 if idx1 not in self.__edges:
@@ -162,7 +164,7 @@ class CWNET:
                 if self.__is_lower_better:
                     self.__edges[idx1][idx2] = avg + stdv / 100.
                 else:
-                    self.__edges[idx1][idx2] = avg + (1 - stdv / 100.)
+                    self.__edges[idx1][idx2] = avg + (0.99 - stdv / 100.)
 
     def calc_score(self, data):
         score = 0
