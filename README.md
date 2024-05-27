@@ -48,7 +48,7 @@ sub commands:
 - simulator is used for simulating data for testing our methods.
 
 ```bash
-usage: gpnet.py simulator [-h] -o OUTDIR [-r ROUND] [-s SITES] [-a AVG_TYPES] [-n NOISE] [-c SAMPLES] [-t THREAD]
+usage: gpnet.py simulator [-h] -o OUTDIR [-r ROUND] [-s SITES] [-a AVG_TYPES] [-n NOISE] [-c SAMPLES] [-b] [-p PARENT] [-t THREAD]
 
 options:
   -h, --help            show this help message and exit
@@ -64,6 +64,9 @@ options:
                         Noise ratio of sites, these sites have lower genomic valuethan others , default=0.0 and less than 1
   -c SAMPLES, --samples SAMPLES
                         Simulate sample count, default=100
+  -b, --hybrid          Means simulate a hybrid population, if this parameter is setting
+  -p PARENT, --parent PARENT
+                        Parent counts for simulating hybrid population, only effect when hybrid is setting, default=10
   -t THREAD, --thread THREAD
                         Threads, default=10
 ```
