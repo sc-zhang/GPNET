@@ -18,6 +18,9 @@ def main():
                                        'than others , default=0.0 and less than 1',
                                   type=float, default=0.0)
     parser_simulator.add_argument('-c', '--samples', help='Simulate sample count, default=100', type=int, default=100)
+    parser_simulator.add_argument('-b', '--hybrid', help='Means simulate a hybrid population, if this parameter is setting',
+                                  action='store_true')
+    parser_simulator.add_argument('-p', '--parent', help='Parent counts for simulating hybrid population, only effect when hybrid is setting, default=10', type=int, default=10)
     parser_simulator.add_argument('-t', '--thread', help='Threads, default=10', type=int, default=10)
     parser_simulator.set_defaults(func=simdata.main)
 

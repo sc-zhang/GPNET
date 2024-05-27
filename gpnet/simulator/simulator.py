@@ -3,12 +3,14 @@ from gpnet.simulator.calc import calc_pheno
 
 
 class Simulator:
-    def __init__(self, site_cnt, avg_type_cnt, noise_ratio, sample_cnt):
+    def __init__(self, site_cnt, avg_type_cnt, noise_ratio, sample_cnt, is_hybrid, pat_cnt):
         random.seed()
         self.__site_cnt = site_cnt
         self.__avg_type_cnt = avg_type_cnt
         self.__noise_ratio = noise_ratio
         self.__sample_cnt = sample_cnt
+        self.__is_hybrid = is_hybrid
+        self.__pat_cnt = pat_cnt
         self.__total_type_cnt = 0
 
         self.__NOISE_EFFECT = [-20, 20]  # [0, 20]
@@ -55,23 +57,55 @@ class Simulator:
         '''
 
         self.genotypes = []
-        genotype_set = set()
-        for smp_idx in range(self.__sample_cnt):
-            genotype = [0 for _ in range(self.__total_type_cnt)]
-            for var_idx in range(self.__site_cnt):
-                genotype[random.randint(0, self.type_info[var_idx]) + inc_list[var_idx]] = 1
+        if self.__is_hybrid:
+            pat_pool = set()
+            for pat_idx in range(self.__pat_cnt):
+                pat_geno = [0 for _ in range(self.__total_type_cnt)]
+                for var_idx in range(self.__site_cnt):
+                    pat_geno[random.randint(0, self.type_info[var_idx]) + inc_list[var_idx]] = 1
 
-            # avoid duplicate samples, if the choise less than sample count, it may cause deadloop, for that test_cnt is
-            # set as test times, max test should not over 10000 times.
-            test_cnt = 0
-            while tuple(genotype) in genotype_set and test_cnt < 10000:
+                # avoid duplicate samples, if the choise less than sample count, it may cause deadloop, for that
+                # test_cnt is set as test times, max test should not over 10000 times.
+                test_cnt = 0
+                while tuple(pat_geno) in pat_pool and test_cnt < 10000:
+                    pat_geno = [0 for _ in range(self.__total_type_cnt)]
+                    for var_idx in range(self.__site_cnt):
+                        pat_geno[random.randint(0, self.type_info[var_idx]) + inc_list[var_idx]] = 1
+                    test_cnt += 1
+
+                pat_pool.add(tuple(pat_geno))
+            pat_pool = list(pat_pool)
+            for smp_idx in range(self.__sample_cnt):
+                random.shuffle(pat_pool)
+                genotype = [0 for _ in range(self.__total_type_cnt)]
+                pat_geno = pat_pool[0]
+                mat_geno = pat_pool[1]
+                for var_idx in range(self.__site_cnt):
+                    if random.rand() < 0.5:
+                        for _ in range(inc_list[var_idx], inc_list[var_idx + 1]):
+                            genotype[_] = pat_geno[_]
+                    else:
+                        for _ in range(inc_list[var_idx], inc_list[var_idx + 1]):
+                            genotype[_] = mat_geno[_]
+                self.genotypes.append(genotype)
+        else:
+            genotype_set = set()
+            for smp_idx in range(self.__sample_cnt):
                 genotype = [0 for _ in range(self.__total_type_cnt)]
                 for var_idx in range(self.__site_cnt):
                     genotype[random.randint(0, self.type_info[var_idx]) + inc_list[var_idx]] = 1
-                test_cnt += 1
 
-            genotype_set.add(tuple(genotype))
-            self.genotypes.append(genotype)
+                # avoid duplicate samples, if the choise less than sample count, it may cause deadloop, for that
+                # test_cnt is set as test times, max test should not over 10000 times.
+                test_cnt = 0
+                while tuple(genotype) in genotype_set and test_cnt < 10000:
+                    genotype = [0 for _ in range(self.__total_type_cnt)]
+                    for var_idx in range(self.__site_cnt):
+                        genotype[random.randint(0, self.type_info[var_idx]) + inc_list[var_idx]] = 1
+                    test_cnt += 1
+
+                genotype_set.add(tuple(genotype))
+                self.genotypes.append(genotype)
         self.genotypes = array(self.genotypes)
 
     def sim_site_effects(self):
