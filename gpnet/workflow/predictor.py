@@ -9,8 +9,8 @@ def sub_process(idx, method, in_file, weight_file, is_lower_better, out_file):
     try:
         func = eval(method.upper())(in_file, weight_file, is_lower_better, out_file)
         func.run()
-    except NameError:
-        Message.error("No method named: %s" % method)
+    except Exception as e:
+        Message.error("Error: %s" % str(e))
 
 
 def load_file_list(in_file):
