@@ -200,3 +200,54 @@ class GraphLoader:
                     self.edges.append({'source': src, 'target': tgt, "value": val})
 
             self.categories = [{"name": _["name"]} for _ in self.nodes]
+
+
+class NetLoader:
+    def __init__(self):
+        self.type_info = None
+        self.allele_name = None
+        self.best_genotype = None
+        self.nodes = None
+        self.edges = None
+
+    def load_net(self, in_file):
+        is_node = False
+        is_edge = False
+        with open(in_file, 'r') as fin:
+            for line in fin:
+                if line[0] == '#':
+                    data = line.strip().split()
+                    if line.startswith("#TypeInfo"):
+                        self.type_info = list(map(int, data[1:]))
+                        continue
+                    if line.startswith("#Sample"):
+                        self.allele_name = data[1:-1]
+                        allele_idx = {self.allele_name[_]: _ for _ in range(len(self.allele_name))}
+                        self.nodes = [0 for _ in range(len(self.allele_name))]
+                        self.edges = [[0 for _ in range(len(self.allele_name))] for __ in range(len(self.allele_name))]
+                        continue
+                    if line.startswith("# Nodes"):
+                        is_node = True
+                        continue
+                    if line.startswith("# Edges"):
+                        is_node = False
+                        is_edge = True
+                        continue
+                    if is_node:
+                        if len(data) < 3:
+                            continue
+                        gid = data[1]
+                        val = float(data[2])
+                        self.nodes[allele_idx[gid]] = val
+                    if is_edge:
+                        if len(data) < 4:
+                            continue
+                        g1, g2, val = data[1:]
+                        val = float(val)
+                        gidx1 = allele_idx[g1]
+                        gidx2 = allele_idx[g2]
+                        self.edges[gidx1][gidx2] = val
+                        self.edges[gidx2][gidx1] = val
+                else:
+                    data = line.strip().split('\t')
+                    self.best_genotype = array(list(map(int, data[1:-1])))
