@@ -1,4 +1,5 @@
 from sklearn.linear_model import LinearRegression
+import pickle
 from gpnet.simulator.calc import calc_pheno
 from gpnet.algorithm.SA import SA
 from gpnet.io.data_io import DataLoader, DataSaver
@@ -12,6 +13,7 @@ class MLR:
         self.__weight_file = weight_file
         self.__is_lower_better = is_lower_better
         self.__out_file = out_file
+        self.__out_model = out_file + ".pkl"
         self.__type_info = None
         self.__allele_name = None
         self.__lrg = LinearRegression()
@@ -46,6 +48,9 @@ class MLR:
         x_train = genotypes
         y_train = phenotypes
         self.__model = self.__lrg.fit(x_train, y_train)
+        with open(self.__out_model, 'wb') as fout:
+            pickle.dump(self.__model, fout)
+
         Message.info("\tPID:%d Running SA" % getpid())
         sa = SA(self.__type_info, self.__allele_name, self.__out_file,
                 self.predict, self.__is_lower_better, iterate=100, alpha=0.99)
