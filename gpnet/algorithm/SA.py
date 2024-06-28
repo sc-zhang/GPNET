@@ -31,14 +31,16 @@ class SA:
 
     def __generate_new(self):
         new_data = deepcopy(self.data)
-        change_site = random.randint(self.__site_cnt)
-        change_type = random.randint(self.__type_info[change_site])
+        # random change most 10 site
+        for _ in range(1, random.randint(10)):
+            change_site = random.randint(self.__site_cnt)
+            change_type = random.randint(self.__type_info[change_site])
 
-        for cur_type in range(self.__inc_type_info[change_site], self.__inc_type_info[change_site + 1]):
-            if cur_type - self.__inc_type_info[change_site] != change_type:
-                new_data[cur_type] = 0
-            else:
-                new_data[cur_type] = 1
+            for cur_type in range(self.__inc_type_info[change_site], self.__inc_type_info[change_site + 1]):
+                if cur_type - self.__inc_type_info[change_site] != change_type:
+                    new_data[cur_type] = 0
+                else:
+                    new_data[cur_type] = 1
 
         return new_data
 
