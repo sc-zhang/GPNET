@@ -32,7 +32,7 @@ class SA:
     def __generate_new(self):
         new_data = deepcopy(self.data)
         # random change most 10 site
-        for _ in range(1, random.randint(10)):
+        for _ in range(1, random.randint(2, 10)):
             change_site = random.randint(self.__site_cnt)
             change_type = random.randint(self.__type_info[change_site])
 
@@ -125,7 +125,7 @@ class SelectSA:
                 src_set.add(_)
 
         src_list = list(src_set)
-        for _ in range(1, random.randint(10)):
+        for _ in range(1, random.randint(2, 10)):
             src_site = src_list[random.randint(len(src_list))]
             tgt_site = random.randint(self.__site_cnt)
             while tgt_site in src_set:
