@@ -13,8 +13,8 @@ class Simulator:
         self.__pat_cnt = pat_cnt
         self.__total_type_cnt = 0
 
-        self.__NOISE_EFFECT = [-20, 20]  # [0, 20]
-        self.__NORMAL_EFFECT = [-200, 200]  # [21, 200]
+        self.__NOISE_EFFECT = [0, 20]
+        self.__NORMAL_EFFECT = [21, 200]
 
         self.genotypes = None
         self.type_info = None
@@ -121,21 +121,21 @@ class Simulator:
                 if type_idx == self.type_info[var_idx] - 1 and self.type_info[var_idx] > 1:
                     self.single_weight[site_effect_idx] = 0
                 else:
-                    # sign = 1 if random.rand() < 0.5 else -1
-                    sign = 1
+                    sign = 1 if random.rand() < 0.5 else -1
                     if random.rand() < self.__noise_ratio:
-                        '''
                         self.single_weight[site_effect_idx] = sign * random.randint(self.__NOISE_EFFECT[0],
                                                                                     self.__NOISE_EFFECT[1])
                         '''
                         self.single_weight[site_effect_idx] = random.normal(loc=0, scale=self.__NOISE_EFFECT[1])
+                        '''
                         noise_sites.add(site_effect_idx)
                     else:
-                        '''
+
                         self.single_weight[site_effect_idx] = sign * random.randint(self.__NORMAL_EFFECT[0],
                                                                                     self.__NORMAL_EFFECT[1])
                         '''
                         self.single_weight[site_effect_idx] = random.normal(loc=0, scale=self.__NORMAL_EFFECT[1])
+                        '''
 
                 site_effect_idx += 1
 
