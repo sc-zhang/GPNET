@@ -125,12 +125,13 @@ class SelectSA:
                 src_set.add(_)
 
         src_list = list(src_set)
-        src_site = src_list[random.randint(len(src_list))]
-        tgt_site = random.randint(self.__site_cnt)
-        while tgt_site in src_set:
+        for _ in range(1, random.randint(10)):
+            src_site = src_list[random.randint(len(src_list))]
             tgt_site = random.randint(self.__site_cnt)
-        new_data[src_site] = 0
-        new_data[tgt_site] = 1
+            while tgt_site in src_set:
+                tgt_site = random.randint(self.__site_cnt)
+            new_data[src_site] = 0
+            new_data[tgt_site] = 1
         return new_data
 
     def __metrospolis(self, f, f_new):
