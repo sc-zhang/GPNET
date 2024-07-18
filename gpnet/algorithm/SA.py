@@ -65,12 +65,13 @@ class SA:
                     return 0
 
     def run(self):
+        f = self.__func(self.data)
         while self.__t > self.__t_final:
             for _ in range(self.__iterate):
-                f = self.__func(self.data)
                 new_data = self.__generate_new()
                 f_new = self.__func(new_data)
                 if self.__metrospolis(f, f_new):
+                    f = f_new
                     self.data = deepcopy(new_data)
                     if not self.__iter_data or self.data != self.__iter_data[-1]:
                         self.__iter_data.append(self.data)
@@ -155,9 +156,9 @@ class SelectSA:
                     return 0
 
     def run(self):
+        f = self.__func(self.geno)
         while self.__t > self.__t_final:
             for _ in range(self.__iterate):
-                f = self.__func(self.geno)
                 new_data = self.__generate_new()
                 new_geno = [0 for _ in range(self.__total_type_cnt)]
                 for _ in range(len(new_data)):
@@ -165,6 +166,7 @@ class SelectSA:
                         new_geno[self.geno_db[_]] = 1
                 f_new = self.__func(new_geno)
                 if self.__metrospolis(f, f_new):
+                    f = f_new
                     self.data = deepcopy(new_data)
                     self.geno = deepcopy(new_geno)
 
