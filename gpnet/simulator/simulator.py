@@ -167,10 +167,10 @@ class Simulator:
                     tmp_site_with_types.append(site_with_type_idx)
 
                 # simulate additive effect and epistatic effect
-                if random.random() < 1. / co_site_cnt:
-                    effect_type = "add"
-                else:
+                if random.random() < 1. / (100 * (10 - co_site_cnt)):
                     effect_type = "epi"
+                else:
+                    effect_type = "add"
 
                 curr_effect = 0
                 if effect_type == "add":
