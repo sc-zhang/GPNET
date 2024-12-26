@@ -207,12 +207,12 @@ class GraphSaver:
         self.__out_pre = out_pre
 
     def save_graph(self, graph):
-        with open(self.__out_pre + "nodes.csv", 'w') as fout:
+        with open(self.__out_pre + ".nodes.csv", 'w') as fout:
             fout.write("Nodes,Weights\n")
             for _ in graph.nodes:
                 fout.write("%s,%s\n" % (_["name"], str(_["value"])))
 
-        with open(self.__out_pre + "edges.csv", 'w') as fout:
+        with open(self.__out_pre + ".edges.csv", 'w') as fout:
             fout.write("Source,Target,Weight\n")
             for _ in graph.edges:
                 fout.write("%s,%s,%s\n" % (_["source"], _["target"], _["value"]))
