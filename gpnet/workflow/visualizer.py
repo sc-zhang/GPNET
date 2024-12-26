@@ -1,4 +1,4 @@
-from gpnet.io.data_io import GraphLoader
+from gpnet.io.data_io import GraphLoader, GraphSaver
 from gpnet.io.message import Message
 from pyecharts import options as opts
 from pyecharts.charts import Graph
@@ -36,4 +36,7 @@ def main(args):
     Message.info("Plotting")
     plot_chart(dl.nodes, dl.edges, dl.categories, out_html)
 
+    out_pre = out_html if not out_html.endswith(".html") else '.'.join(out_html.split('.')[:-1])
+    ds = GraphSaver(out_pre)
+    ds.save_graph(dl)
     Message.info("Finished")

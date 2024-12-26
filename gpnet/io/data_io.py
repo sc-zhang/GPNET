@@ -187,7 +187,7 @@ class GraphLoader:
                         edge_cnt[src] += 1
                         edge_cnt[tgt] += 1
                         uf.union(node_idx[src], node_idx[tgt])
-                        self.edges.append({'source': src, 'target': tgt, "value": val})
+                        self.edges.append({"source": src, "target": tgt, "value": val})
 
             for info in sorted(order_list):
                 val = info[0]
@@ -197,9 +197,25 @@ class GraphLoader:
                     if uf.find(node_idx[src]) == uf.find(node_idx[tgt]):
                         continue
                     uf.union(node_idx[src], node_idx[tgt])
-                    self.edges.append({'source': src, 'target': tgt, "value": val})
+                    self.edges.append({"source": src, "target": tgt, "value": val})
 
             self.categories = [{"name": _["name"]} for _ in self.nodes]
+
+
+class GraphSaver:
+    def __init__(self, out_pre):
+        self.__out_pre = out_pre
+
+    def save_graph(self, graph):
+        with open(self.__out_pre + "nodes.csv", 'w') as fout:
+            fout.write("Nodes,Weights\n")
+            for _ in graph.nodes:
+                fout.write("%s,%s\n" % (_["name"], str(_["value"])))
+
+        with open(self.__out_pre + "edges.csv", 'w') as fout:
+            fout.write("Source,Target,Weight\n")
+            for _ in graph.edges:
+                fout.write("%s,%s,%s\n" % (_["source"], _["target"], _["value"]))
 
 
 class NetLoader:
