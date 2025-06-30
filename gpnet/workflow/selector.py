@@ -19,6 +19,9 @@ def main(args):
     else:
         selector = SelectNet(select_cnt, dl.type_info, dl.allele_name, out_file,
                              dl.best_genotype, dl.nodes, dl.edges, is_lower_better)
-        selector.run()
+        if selector.run():
+            Message.info("Selected")
+        else:
+            Message.error("Unable select genes")
 
     Message.info("Finished")

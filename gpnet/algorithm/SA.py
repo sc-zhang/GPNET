@@ -92,6 +92,7 @@ class SelectSA:
         self.__inc_type_info = [0]
         for type_cnt in self.__type_info:
             self.__inc_type_info.append(self.__inc_type_info[-1] + type_cnt)
+        self.__non_absence_site = set()
         self.__func = func
         self.__is_lower_better = is_lower_better
         self.__iterate = iterate
@@ -107,13 +108,20 @@ class SelectSA:
             ep = self.__inc_type_info[_ + 1]
             for __ in range(sp, ep):
                 if best_genotype[__] == 1:
+                    if __ != ep - 1:
+                        self.__non_absence_site.add(_)
                     self.geno_db[_] = __
                     break
 
         self.data = [0 for _ in range(self.__site_cnt)]
         # set first select count of genes to 1
-        for _ in range(self.__select_count):
-            self.data[_] = 1
+        self.__data_init__cnt = 0
+        for _ in range(self.__site_cnt):
+            if _ in self.__non_absence_site:
+                self.data[_] = 1
+                self.__data_init__cnt += 1
+            if self.__data_init__cnt >= self.__select_count:
+                break
         self.geno = [0 for _ in range(self.__total_type_cnt)]
         for _ in range(self.__select_count):
             self.geno[self.geno_db[_]] = 1
@@ -126,13 +134,18 @@ class SelectSA:
                 src_set.add(_)
 
         src_list = list(src_set)
+        non_absence_site = list(self.__non_absence_site)
         for _ in range(1, random.randint(2, 10)):
+            if len(src_set) >= len(non_absence_site):
+                continue
             src_set = set(src_list)
             idx = random.randint(len(src_list))
             src_site = src_list[idx]
-            tgt_site = random.randint(self.__site_cnt)
+            tgt_idx = random.randint(len(non_absence_site))
+            tgt_site = non_absence_site[tgt_idx]
             while tgt_site in src_set:
-                tgt_site = random.randint(self.__site_cnt)
+                tgt_idx = random.randint(len(non_absence_site))
+                tgt_site = non_absence_site[tgt_idx]
             new_data[src_site] = 0
             new_data[tgt_site] = 1
             src_list.remove(src_site)
@@ -160,6 +173,8 @@ class SelectSA:
                     return 0
 
     def run(self):
+        if self.__data_init__cnt < self.__select_count:
+            return False
         f = self.__func(self.geno)
         while self.__t > self.__t_final:
             for _ in range(self.__iterate):
@@ -175,3 +190,4 @@ class SelectSA:
                     self.geno = deepcopy(new_geno)
 
             self.__t = self.__t * self.__alpha
+        return True

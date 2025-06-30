@@ -31,11 +31,13 @@ class SelectNet:
     def run(self):
         ssa = SelectSA(self.__select_count, self.__type_info, self.__best_geno,
                        self.calc_score, self.__is_lower_better)
-        ssa.run()
+        if ssa.run():
+            for _ in range(len(ssa.geno)):
+                if ssa.geno[_] == 1:
+                    self.best_alleles.append(self.__allele_name[_])
 
-        for _ in range(len(ssa.geno)):
-            if ssa.geno[_] == 1:
-                self.best_alleles.append(self.__allele_name[_])
-
-        with open(self.__outfile, 'w') as fout:
-            fout.write("%s\n" % ('\n'.join(self.best_alleles)))
+            with open(self.__outfile, 'w') as fout:
+                fout.write("%s\n" % ('\n'.join(self.best_alleles)))
+            return True
+        else:
+            return False
