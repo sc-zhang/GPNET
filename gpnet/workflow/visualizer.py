@@ -13,12 +13,14 @@ def plot_chart(nodes, edges, categories, out_html):
             edges,
             categories,
             repulsion=500,
+            layout="circular",
+            is_rotate_label=True,
             linestyle_opts=opts.LineStyleOpts(curve=0.2),
             label_opts=opts.LabelOpts(is_show=False)
         )
         .set_global_opts(
             legend_opts=opts.LegendOpts(is_show=False),
-            title_opts=opts.TitleOpts(title="CWNet")
+            title_opts=opts.TitleOpts(title="GPNET")
         )
         .render(out_html)
     )
@@ -27,11 +29,13 @@ def plot_chart(nodes, edges, categories, out_html):
 def main(args):
     out_html = args.output
     in_data = args.input
+    node_cmap = args.node_cmap
+    edge_cmap = args.edge_cmap
     is_lower_better = args.lower
 
     Message.info("Loading data")
     dl = GraphLoader()
-    dl.load_data(in_data, is_lower_better)
+    dl.load_data(in_data, is_lower_better, node_cmap, edge_cmap)
 
     Message.info("Plotting")
     plot_chart(dl.nodes, dl.edges, dl.categories, out_html)

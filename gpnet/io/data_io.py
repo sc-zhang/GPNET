@@ -1,5 +1,8 @@
-from numpy import array, random
-from gpnet.algorithm.UnionFind import UnionFind
+from numpy import array
+from pyecharts import options as opts
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import numpy as np
 
 
 class DataSaver:
@@ -110,15 +113,29 @@ class DataLoader:
 
 class GraphLoader:
     def __init__(self):
+        self.nodes_for_save = []
+        self.edges_for_save = []
         self.nodes = []
         self.edges = []
         self.categories = []
 
-    def load_data(self, in_file, is_lower_better):
+    @staticmethod
+    def _gen_mapper(vmin, vmax, cmap_name, cmap_parts):
+        cmap = plt.get_cmap(cmap_name)
+        norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax, clip=True)
+        mapper = mpl.cm.ScalarMappable(norm=norm, cmap=cmap)
+        mapper.set_array(np.arange(vmin, vmax, (vmax - vmin) * 1. / cmap_parts))
+        return mapper
+
+    def load_data(self, in_file, is_lower_better, node_cmap="Oranges", edge_cmap="Greens", cmap_parts=100.):
         is_nodes = False
         is_edges = False
         select_nodes = set()
         order_list = []
+        node_min = float('nan')
+        node_max = float('nan')
+        edge_min = float('nan')
+        edge_max = float('nan')
 
         with open(in_file, 'r') as fin:
             for line in fin:
@@ -138,7 +155,12 @@ class GraphLoader:
                         if len(data) < 3:
                             continue
                         if data[1] in select_nodes:
-                            order_list.append([float(data[-1]), data[1]])
+                            val = float(data[-1])
+                            if np.isnan(node_min) or val < node_min:
+                                node_min = val
+                            if np.isnan(node_max) or val > node_max:
+                                node_max = val
+                            order_list.append([val, data[1]])
                     elif is_edges:
                         data = line.strip().split()
                         if len(data) < 4:
@@ -147,6 +169,11 @@ class GraphLoader:
                         tgt = data[2]
                         if src not in select_nodes or tgt not in select_nodes:
                             continue
+                        val = float(data[-1])
+                        if np.isnan(edge_min) or val < edge_min:
+                            edge_min = val
+                        if np.isnan(edge_max) or val > edge_max:
+                            edge_max = val
                         order_list.append([float(data[-1]), src, tgt])
 
                 else:
@@ -154,52 +181,46 @@ class GraphLoader:
                     for _ in range(1, len(data) - 1):
                         if data[_] == '1':
                             select_nodes.add(sample_list[_])
+            if is_lower_better:
+                if node_cmap.endswith("_r"):
+                    node_cmap.replace("_r", "")
+                else:
+                    node_cmap += "_r"
+                if edge_cmap.endswith("_r"):
+                    edge_cmap.replace("_r", "")
+                else:
+                    edge_cmap += "_r"
+            node_mapper = self._gen_mapper(node_min, node_max, node_cmap, cmap_parts)
+            edge_mapper = self._gen_mapper(edge_min, edge_max, edge_cmap, cmap_parts)
 
-            uf = UnionFind(len(select_nodes))
-            node_idx = {}
-            idx = 0
-            for node in select_nodes:
-                node_idx[node] = idx
-                idx += 1
-
-            edge_cnt = {}
-            for info in sorted(order_list,
-                               key=lambda x: x[0] if is_lower_better else (100 - int(x[0]) + (x[0] - int(x[0])))):
+            for info in sorted(order_list, key=lambda x: -x[0] if is_lower_better else x[0]):
                 val = info[0]
                 if len(info) == 2:
                     symbol_size = (100 - int(val) + (val - int(val))) / 3. if is_lower_better else val / 3.
-                    self.nodes.append({"name": info[1],
-                                       "symbolSize": symbol_size,
-                                       "category": info[1],
-                                       "value": val,
-                                       "label": {"normal": {"show": "True"}}})
+                    self.nodes_for_save.append({"name": info[1],
+                                                "symbolSize": symbol_size,
+                                                "category": info[1],
+                                                "value": val,
+                                                "color": node_mapper.to_rgba(val),
+                                                "label": {"normal": {"show": "True"}}})
+                    opt = opts.GraphNode(name=info[1], symbol_size=symbol_size, value=val,
+                                         itemstyle_opts=opts.ItemStyleOpts(
+                                             color="rgb" + str(node_mapper.to_rgba(val, bytes=True))),
+                                         label_opts=opts.LabelOpts(is_show=True, font_style="normal"))
+                    self.nodes.append(opt)
                 else:
                     src = info[1]
                     tgt = info[2]
-                    if src not in edge_cnt:
-                        edge_cnt[src] = 1
-                    if tgt not in edge_cnt:
-                        edge_cnt[tgt] = 1
-                    if uf.find(node_idx[src]) == uf.find(node_idx[tgt]):
-                        continue
+                    link_size = (100 - int(val) + (val - int(val))) / 20. if is_lower_better else val / 20.
+                    self.edges_for_save.append(
+                        {"source": src, "target": tgt, "value": val})
+                    opt = opts.GraphLink(source=src, target=tgt, value=val,
+                                         linestyle_opts=opts.LineStyleOpts(curve=0.2, width=link_size,
+                                                                           color="rgb" + str(
+                                                                               edge_mapper.to_rgba(val, bytes=True))))
+                    self.edges.append(opt)
 
-                    if random.random() < 1.0 / max(edge_cnt[src], edge_cnt[tgt]):
-                        edge_cnt[src] += 1
-                        edge_cnt[tgt] += 1
-                        uf.union(node_idx[src], node_idx[tgt])
-                        self.edges.append({"source": src, "target": tgt, "value": val})
-
-            for info in sorted(order_list):
-                val = info[0]
-                if len(info) > 2:
-                    src = info[1]
-                    tgt = info[2]
-                    if uf.find(node_idx[src]) == uf.find(node_idx[tgt]):
-                        continue
-                    uf.union(node_idx[src], node_idx[tgt])
-                    self.edges.append({"source": src, "target": tgt, "value": val})
-
-            self.categories = [{"name": _["name"]} for _ in self.nodes]
+            self.categories = [{"name": _["name"]} for _ in self.nodes_for_save]
 
 
 class GraphSaver:
@@ -209,12 +230,12 @@ class GraphSaver:
     def save_graph(self, graph):
         with open(self.__out_pre + ".nodes.csv", 'w') as fout:
             fout.write("Nodes,Weights\n")
-            for _ in graph.nodes:
+            for _ in graph.nodes_for_save:
                 fout.write("%s,%s\n" % (_["name"], str(_["value"])))
 
         with open(self.__out_pre + ".edges.csv", 'w') as fout:
             fout.write("Source,Target,Weight\n")
-            for _ in graph.edges:
+            for _ in graph.edges_for_save:
                 fout.write("%s,%s,%s\n" % (_["source"], _["target"], _["value"]))
 
 
