@@ -197,12 +197,7 @@ class GraphLoader:
                 val = info[0]
                 if len(info) == 2:
                     symbol_size = (100 - int(val) + (val - int(val))) / 3. if is_lower_better else val / 3.
-                    self.nodes_for_save.append({"name": info[1],
-                                                "symbolSize": symbol_size,
-                                                "category": info[1],
-                                                "value": val,
-                                                "color": node_mapper.to_rgba(val),
-                                                "label": {"normal": {"show": "True"}}})
+                    self.nodes_for_save.append({"name": info[1], "value": val})
                     opt = opts.GraphNode(name=info[1], symbol_size=symbol_size, value=val,
                                          itemstyle_opts=opts.ItemStyleOpts(
                                              color="rgb" + str(node_mapper.to_rgba(val, bytes=True))),
