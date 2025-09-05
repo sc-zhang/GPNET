@@ -20,7 +20,7 @@ def plot_chart(nodes, edges, categories, out_html):
         )
         .set_global_opts(
             legend_opts=opts.LegendOpts(is_show=False),
-            title_opts=opts.TitleOpts(title="GPNET")
+            title_opts=opts.TitleOpts(title="")
         )
         .render(out_html)
     )
