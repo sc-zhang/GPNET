@@ -7,7 +7,8 @@ from os import path, makedirs
 def sub_process(idx, method, in_file, weight_file, is_lower_better, is_normalization, out_file):
     Message.info("Round %d" % (idx + 1))
     try:
-        func = eval(method.upper())(in_file, weight_file, is_lower_better, is_normalization, out_file)
+        func = globals()[method.upper()](in_file, weight_file, is_lower_better, is_normalization, out_file)
+        # func = eval(method.upper())(in_file, weight_file, is_lower_better, is_normalization, out_file)
         func.run()
     except Exception as e:
         Message.error("Error: %s" % str(e))
