@@ -121,6 +121,9 @@ class GraphLoader:
 
     @staticmethod
     def _gen_mapper(vmin, vmax, cmap_name, cmap_parts):
+        if vmin == vmax:
+            vmin = 0
+            vmax = 100
         cmap = plt.get_cmap(cmap_name)
         norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax, clip=True)
         mapper = mpl.cm.ScalarMappable(norm=norm, cmap=cmap)

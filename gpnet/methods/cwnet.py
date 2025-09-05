@@ -7,10 +7,11 @@ from numpy import sum, average, std, isnan
 
 
 class CWNET:
-    def __init__(self, in_file, weight_file, is_lower_better, out_file):
+    def __init__(self, in_file, weight_file, is_lower_better, is_normalization, out_file):
         self.__in_file = in_file
         self.__weight_file = weight_file
         self.__is_lower_better = is_lower_better
+        self.__is_normalization = is_normalization
         self.__out_file = out_file
         self.__type_info = None
         self.__allele_name = None
@@ -18,57 +19,63 @@ class CWNET:
         self.__nodes = None
         self.__edges = None
 
-    def __norm_data(self, data_list):
-        norm_data_db = {}
-        min_avg = data_list[0][1]
-        max_avg = data_list[0][1]
+    def __convert_data(self, data_list):
+        converted_data_db = {}
+        if self.__is_normalization:
+            min_avg = data_list[0][1]
+            max_avg = data_list[0][1]
 
-        min_std = data_list[0][2]
-        max_std = data_list[0][2]
+            min_std = data_list[0][2]
+            max_std = data_list[0][2]
 
-        for _, avg, stdv in data_list:
-            if isnan(avg) or isnan(stdv):
-                continue
-            if avg < min_avg or isnan(min_avg):
-                min_avg = avg
-            if avg > max_avg or isnan(max_avg):
-                max_avg = avg
-            if stdv < min_std or isnan(min_std):
-                min_std = stdv
-            if stdv > max_std or isnan(max_std):
-                max_std = stdv
+            for _, avg, stdv in data_list:
+                if not isnan(avg):
+                    if avg < min_avg or isnan(min_avg):
+                        min_avg = avg
+                    if avg > max_avg or isnan(max_avg):
+                        max_avg = avg
+                if not isnan(stdv):
+                    if stdv < min_std or isnan(min_std):
+                        min_std = stdv
+                    if stdv > max_std or isnan(max_std):
+                        max_std = stdv
 
-        mm_avg = max_avg - min_avg + 1
-        mm_std = max_std - min_std + 1
-
-        for _ in range(len(data_list)):
-            if self.__is_lower_better:
-                if isnan(data_list[_][1]) or isnan(data_list[_][2]):
-                    data_list[_][1] = max_avg
-                    data_list[_][2] = max_std
-            else:
-                if isnan(data_list[_][1]) or isnan(data_list[_][2]):
-                    data_list[_][1] = min_avg
-                    data_list[_][2] = min_std
-            data_list[_][1] = int((data_list[_][1] - min_avg) * 99. / mm_avg)
-            data_list[_][2] = int((data_list[_][2] - min_std) * 99. / mm_std)
+            mm_avg = max_avg - min_avg
+            mm_std = max_std - min_std
+            if mm_avg == 0:
+                mm_avg = 1.
+            if mm_std == 0:
+                mm_std = 1.
+            for _ in range(len(data_list)):
+                if self.__is_lower_better:
+                    if isnan(data_list[_][1]):
+                        data_list[_][1] = max_avg
+                    if isnan(data_list[_][2]):
+                        data_list[_][2] = max_std
+                else:
+                    if isnan(data_list[_][1]):
+                        data_list[_][1] = min_avg
+                    if isnan(data_list[_][2]):
+                        data_list[_][2] = min_std
+                data_list[_][1] = int((data_list[_][1] - min_avg) * 99. / mm_avg)
+                data_list[_][2] = int((data_list[_][2] - min_std) * 99. / mm_std)
 
         # average higher and stdev lower is better
         for _, avg, stdv in sorted(data_list, key=lambda x: [x[1], -x[2]]):
             if isinstance(_, int):
                 if self.__is_lower_better:
-                    norm_data_db[_] = avg + stdv / 100.
+                    converted_data_db[_] = avg + stdv / 100. if self.__is_normalization else avg
                 else:
-                    norm_data_db[_] = avg + (0.99 - stdv / 100.)
+                    converted_data_db[_] = avg + (0.99 - stdv / 100.) if self.__is_normalization else avg
             else:
                 idx1, idx2 = _
-                if idx1 not in norm_data_db:
-                    norm_data_db[idx1] = {}
+                if idx1 not in converted_data_db:
+                    converted_data_db[idx1] = {}
                 if self.__is_lower_better:
-                    norm_data_db[idx1][idx2] = avg + stdv / 100.
+                    converted_data_db[idx1][idx2] = avg + stdv / 100. if self.__is_normalization else avg
                 else:
-                    norm_data_db[idx1][idx2] = avg + (0.99 - stdv / 100.)
-        return norm_data_db
+                    converted_data_db[idx1][idx2] = avg + (0.99 - stdv / 100.) if self.__is_normalization else avg
+        return converted_data_db
 
     def generate_network(self, genotypes, phenotypes):
         converted_data = {}
@@ -85,7 +92,7 @@ class CWNET:
                       std(converted_data[_]) if len(converted_data[_]) >= 1 else float('nan')]
                      for _ in range(total_site_cnt)]
 
-        self.__nodes = self.__norm_data(node_list)
+        self.__nodes = self.__convert_data(node_list)
 
         converted_data = {}
         inc_type_info = [0]
@@ -111,7 +118,7 @@ class CWNET:
                       std(converted_data[pair]) if len(converted_data[pair]) > 1 else float('nan')]
                      for pair in converted_data]
 
-        self.__edges = self.__norm_data(edge_list)
+        self.__edges = self.__convert_data(edge_list)
 
     def calc_score(self, data):
         score = 0

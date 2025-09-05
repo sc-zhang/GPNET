@@ -4,10 +4,10 @@ from pathos.multiprocessing import Pool
 from os import path, makedirs
 
 
-def sub_process(idx, method, in_file, weight_file, is_lower_better, out_file):
+def sub_process(idx, method, in_file, weight_file, is_lower_better, is_normalization, out_file):
     Message.info("Round %d" % (idx + 1))
     try:
-        func = eval(method.upper())(in_file, weight_file, is_lower_better, out_file)
+        func = eval(method.upper())(in_file, weight_file, is_lower_better, is_normalization, out_file)
         func.run()
     except Exception as e:
         Message.error("Error: %s" % str(e))
@@ -32,11 +32,12 @@ def main(args):
     is_single = args.single
     method = args.method
     is_lower_better = args.lower
+    is_normalization = args.normalization
     thread = args.thread
 
     Message.info("Predicting")
     if is_single:
-        sub_process(0, method, in_file, weight_file, is_lower_better, output)
+        sub_process(0, method, in_file, weight_file, is_lower_better, is_normalization, output)
     else:
         in_file_list = load_file_list(in_file)
         weight_file_list = []
@@ -58,7 +59,8 @@ def main(args):
             else:
                 weight_file = None
                 out_file = path.join(output, "%s.txt" % in_fn)
-            pool.apply_async(sub_process, (i, method, in_file, weight_file, is_lower_better, out_file,))
+            pool.apply_async(sub_process,
+                             (i, method, in_file, weight_file, is_lower_better, is_normalization, out_file,))
         pool.close()
         pool.join()
     Message.info("Finished")

@@ -8,7 +8,7 @@ from os import getpid
 
 
 class MLR:
-    def __init__(self, in_file, weight_file, is_lower_better, out_file):
+    def __init__(self, in_file, weight_file, is_lower_better, is_normalization, out_file):
         self.__in_file = in_file
         self.__weight_file = weight_file
         self.__is_lower_better = is_lower_better
