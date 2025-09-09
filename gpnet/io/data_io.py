@@ -130,7 +130,8 @@ class GraphLoader:
         mapper.set_array(np.arange(vmin, vmax, (vmax - vmin) * 1. / cmap_parts))
         return mapper
 
-    def load_data(self, in_file, is_lower_better, node_cmap="Oranges", edge_cmap="Greens", cmap_parts=100.):
+    def load_data(self, in_file, is_lower_better, node_size_ratio, edge_width_ratio, node_cmap="Oranges",
+                  edge_cmap="Greens", cmap_parts=100.):
         is_nodes = False
         is_edges = False
         select_nodes = set()
@@ -199,23 +200,26 @@ class GraphLoader:
             for info in sorted(order_list, key=lambda x: -x[0] if is_lower_better else x[0]):
                 val = info[0]
                 if len(info) == 2:
-                    symbol_size = (100 - int(val) + (val - int(val))) / 3. if is_lower_better else val / 3.
+                    symbol_size = (100 - int(val) + (
+                            val - int(val))) / node_size_ratio if is_lower_better else val / node_size_ratio
                     self.nodes_for_save.append({"name": info[1], "value": val})
                     opt = opts.GraphNode(name=info[1], symbol_size=symbol_size, value=val,
                                          itemstyle_opts=opts.ItemStyleOpts(
-                                             color="rgb" + str(node_mapper.to_rgba(val, bytes=True))),
+                                             color="rgb" + str(node_mapper.to_rgba(np.array(val), bytes=True))),
                                          label_opts=opts.LabelOpts(is_show=True, font_style="normal"))
                     self.nodes.append(opt)
                 else:
                     src = info[1]
                     tgt = info[2]
-                    link_size = (100 - int(val) + (val - int(val))) / 20. if is_lower_better else val / 20.
+                    link_size = (100 - int(val) + (
+                            val - int(val))) / edge_width_ratio if is_lower_better else val / edge_width_ratio
                     self.edges_for_save.append(
                         {"source": src, "target": tgt, "value": val})
                     opt = opts.GraphLink(source=src, target=tgt, value=val,
                                          linestyle_opts=opts.LineStyleOpts(curve=0.2, width=link_size,
                                                                            color="rgb" + str(
-                                                                               edge_mapper.to_rgba(val, bytes=True))))
+                                                                               edge_mapper.to_rgba(np.array(val),
+                                                                                                   bytes=True))))
                     self.edges.append(opt)
 
             self.categories = [{"name": _["name"]} for _ in self.nodes_for_save]

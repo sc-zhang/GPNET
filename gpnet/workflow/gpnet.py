@@ -70,6 +70,12 @@ def main():
                                    default="Oranges")
     parser_visualizer.add_argument('--edge_cmap', help="Colormap for edges, default=\"Greens\"",
                                    default="Greens")
+    parser_visualizer.add_argument('--node_ratio',
+                                   help="Ratio of node size, higher means smaller node size, default=3.0", type=float,
+                                   default=3.0)
+    parser_visualizer.add_argument('--edge_ratio',
+                                   help="Ratio of edge width, higher means thinner edge width, default=20.0",
+                                   type=float, default=20.0)
     parser_visualizer.add_argument('-l', '--lower',
                                    help='Means lower phenotype is better, if this parameter is setting',
                                    action='store_true')

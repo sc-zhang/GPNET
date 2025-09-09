@@ -31,11 +31,13 @@ def main(args):
     in_data = args.input
     node_cmap = args.node_cmap
     edge_cmap = args.edge_cmap
+    node_size_ratio = args.node_ratio
+    edge_width_ratio = args.edge_ratio
     is_lower_better = args.lower
 
     Message.info("Loading data")
     dl = GraphLoader()
-    dl.load_data(in_data, is_lower_better, node_cmap, edge_cmap)
+    dl.load_data(in_data, is_lower_better, node_size_ratio, edge_width_ratio, node_cmap, edge_cmap)
 
     Message.info("Plotting")
     plot_chart(dl.nodes, dl.edges, dl.categories, out_html)
