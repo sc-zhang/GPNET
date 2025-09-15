@@ -9,54 +9,77 @@ class DataSaver:
     def __init__(self, out_file):
         self.__out_file = out_file
 
-    def save_data(self, type_info, allele_name, genotypes, phenotypes, additional_info=None):
+    def save_data(
+        self, type_info, allele_name, genotypes, phenotypes, additional_info=None
+    ):
         # type_info is like:
         # [site1_type_count, site2_type_count, ..., siteN_type_count]
-        with open(self.__out_file, 'w') as fout:
-            fout.write("#TypeInfo\t%s\n" % ('\t'.join(map(str, type_info))))
+        with open(self.__out_file, "w") as fout:
+            fout.write("#TypeInfo\t%s\n" % ("\t".join(map(str, type_info))))
             fout.write("#Sample\t")
             for _ in allele_name:
                 fout.write("%s\t" % _)
             fout.write("Phenotype\n")
             for _ in range(len(genotypes)):
-                fout.write("%d\t%s\t%s\n" % (_ + 1, '\t'.join(list(map(str, list(genotypes[_])))), str(phenotypes[_])))
+                fout.write(
+                    "%d\t%s\t%s\n"
+                    % (
+                        _ + 1,
+                        "\t".join(list(map(str, list(genotypes[_])))),
+                        str(phenotypes[_]),
+                    )
+                )
             if additional_info:
-                fout.write("%s\n" % ('\n'.join(additional_info)))
+                fout.write("%s\n" % ("\n".join(additional_info)))
 
     def save_iter(self, type_info, allele_name, genotypes, score):
         # type_info is like:
         # [site1_type_count, site2_type_count, ..., siteN_type_count]
-        with open(self.__out_file, 'w') as fout:
-            fout.write("#TypeInfo\t%s\n" % ('\t'.join(map(str, type_info))))
+        with open(self.__out_file, "w") as fout:
+            fout.write("#TypeInfo\t%s\n" % ("\t".join(map(str, type_info))))
             fout.write("#Iteration\t")
             for _ in allele_name:
                 fout.write("%s\t" % _)
             fout.write("Score\n")
             for _ in range(len(score)):
-                fout.write("%d\t%s\t%s\n" % (_ + 1, '\t'.join(list(map(str, list(genotypes[_])))), str(score[_])))
+                fout.write(
+                    "%d\t%s\t%s\n"
+                    % (
+                        _ + 1,
+                        "\t".join(list(map(str, list(genotypes[_])))),
+                        str(score[_]),
+                    )
+                )
 
     def save_sim_data(self, type_info, genotypes, phenotypes):
         # type_info is like:
         # [site1_type_count, site2_type_count, ..., siteN_type_count]
-        with open(self.__out_file, 'w') as fout:
-            fout.write("#TypeInfo\t%s\n" % ('\t'.join(map(str, type_info))))
+        with open(self.__out_file, "w") as fout:
+            fout.write("#TypeInfo\t%s\n" % ("\t".join(map(str, type_info))))
             fout.write("#Sample\t")
             for _ in range(len(type_info)):
                 for __ in range(type_info[_]):
                     fout.write("Site%d-Type%d\t" % (_ + 1, __ + 1))
             fout.write("Phenotype\n")
             for _ in range(len(genotypes)):
-                fout.write("%d\t%s\t%s\n" % (_ + 1, '\t'.join(list(map(str, list(genotypes[_])))), str(phenotypes[_])))
+                fout.write(
+                    "%d\t%s\t%s\n"
+                    % (
+                        _ + 1,
+                        "\t".join(list(map(str, list(genotypes[_])))),
+                        str(phenotypes[_]),
+                    )
+                )
 
     def save_sim_weight(self, single_weight, multi_weight):
-        with open(self.__out_file, 'w') as fout:
+        with open(self.__out_file, "w") as fout:
             fout.write("## Single weight\n")
-            fout.write("%s\n" % ('\t'.join(map(str, list(single_weight)))))
+            fout.write("%s\n" % ("\t".join(map(str, list(single_weight)))))
             fout.write("## Multi weight\n")
             for _ in sorted(multi_weight, reverse=True):
                 for __ in multi_weight[_]:
                     fout.write("# %d\t%d\n" % (_, multi_weight[_][__]))
-                    fout.write("%s\n" % ('\t'.join(map(str, list(__)))))
+                    fout.write("%s\n" % ("\t".join(map(str, list(__)))))
 
 
 class DataLoader:
@@ -71,10 +94,10 @@ class DataLoader:
     def load_genotype(self, genotype_file):
         self.genotypes = []
         self.phenotypes = []
-        with open(genotype_file, 'r') as fin:
+        with open(genotype_file, "r") as fin:
             for line in fin:
                 data = line.strip().split()
-                if line[0] == '#':
+                if line[0] == "#":
                     if line.startswith("#TypeInfo"):
                         self.type_info = list(map(int, data[1:]))
                     elif line.startswith("#Sample"):
@@ -90,25 +113,27 @@ class DataLoader:
         self.multi_weight = {}
         cur_pheno = 0
         is_single = False
-        with open(weight_file, 'r') as fin:
+        with open(weight_file, "r") as fin:
             for line in fin:
                 data = line.strip().split()
-                if data[1] == 'Single':
+                if data[1] == "Single":
                     is_single = True
                     continue
-                elif data[1] == 'Multi':
+                elif data[1] == "Multi":
                     is_single = False
                     continue
                 if is_single:
                     self.single_weight = array(list(map(int, data)))
                 else:
-                    if line[0] == '#':
+                    if line[0] == "#":
                         cur_pheno = int(data[2])
                         sn = int(data[1])
                         if sn not in self.multi_weight:
                             self.multi_weight[sn] = {}
                     else:
-                        self.multi_weight[sn][tuple(sorted(list(map(int, data))))] = cur_pheno
+                        self.multi_weight[sn][
+                            tuple(sorted(list(map(int, data))))
+                        ] = cur_pheno
 
 
 class GraphLoader:
@@ -127,23 +152,38 @@ class GraphLoader:
         cmap = plt.get_cmap(cmap_name)
         norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax, clip=True)
         mapper = mpl.cm.ScalarMappable(norm=norm, cmap=cmap)
-        mapper.set_array(np.arange(vmin, vmax, (vmax - vmin) * 1. / cmap_parts))
+        mapper.set_array(np.arange(vmin, vmax, (vmax - vmin) * 1.0 / cmap_parts))
         return mapper
 
-    def load_data(self, in_file, is_lower_better, node_size_ratio, edge_width_ratio, node_cmap="Oranges",
-                  edge_cmap="Greens", cmap_parts=100.):
+    def load_data(
+        self,
+        in_file,
+        select_file,
+        is_lower_better,
+        node_size_ratio,
+        edge_width_ratio,
+        highlight_color="red",
+        node_cmap="Oranges",
+        edge_cmap="Greens",
+        cmap_parts=100.0,
+    ):
         is_nodes = False
         is_edges = False
+        predict_nodes = set()
         select_nodes = set()
+        if select_file:
+            with open(select_file, "r") as fin:
+                for line in fin:
+                    select_nodes.add(line.strip())
         order_list = []
-        node_min = float('nan')
-        node_max = float('nan')
-        edge_min = float('nan')
-        edge_max = float('nan')
+        node_min = float("nan")
+        node_max = float("nan")
+        edge_min = float("nan")
+        edge_max = float("nan")
 
-        with open(in_file, 'r') as fin:
+        with open(in_file, "r") as fin:
             for line in fin:
-                if line[0] == '#':
+                if line[0] == "#":
                     if line.startswith("#Sample"):
                         sample_list = line.strip().split()
                         continue
@@ -158,7 +198,7 @@ class GraphLoader:
                         data = line.strip().split()
                         if len(data) < 3:
                             continue
-                        if data[1] in select_nodes:
+                        if data[1] in predict_nodes:
                             val = float(data[-1])
                             if np.isnan(node_min) or val < node_min:
                                 node_min = val
@@ -171,7 +211,7 @@ class GraphLoader:
                             continue
                         src = data[1]
                         tgt = data[2]
-                        if src not in select_nodes or tgt not in select_nodes:
+                        if src not in predict_nodes or tgt not in predict_nodes:
                             continue
                         val = float(data[-1])
                         if np.isnan(edge_min) or val < edge_min:
@@ -183,8 +223,8 @@ class GraphLoader:
                 else:
                     data = line.strip().split()
                     for _ in range(1, len(data) - 1):
-                        if data[_] == '1':
-                            select_nodes.add(sample_list[_])
+                        if data[_] == "1":
+                            predict_nodes.add(sample_list[_])
             if is_lower_better:
                 if node_cmap.endswith("_r"):
                     node_cmap.replace("_r", "")
@@ -197,29 +237,69 @@ class GraphLoader:
             node_mapper = self._gen_mapper(node_min, node_max, node_cmap, cmap_parts)
             edge_mapper = self._gen_mapper(edge_min, edge_max, edge_cmap, cmap_parts)
 
-            for info in sorted(order_list, key=lambda x: -x[0] if is_lower_better else x[0]):
+            for info in sorted(
+                order_list, key=lambda x: -x[0] if is_lower_better else x[0]
+            ):
                 val = info[0]
                 if len(info) == 2:
-                    symbol_size = (100 - int(val) + (
-                            val - int(val))) / node_size_ratio if is_lower_better else val / node_size_ratio
+                    symbol_size = (
+                        (100 - int(val) + (val - int(val))) / node_size_ratio
+                        if is_lower_better
+                        else val / node_size_ratio
+                    )
                     self.nodes_for_save.append({"name": info[1], "value": val})
-                    opt = opts.GraphNode(name=info[1], symbol_size=symbol_size, value=val,
-                                         itemstyle_opts=opts.ItemStyleOpts(
-                                             color="rgb" + str(node_mapper.to_rgba(np.array(val), bytes=True))),
-                                         label_opts=opts.LabelOpts(is_show=True, font_style="normal"))
+                    opt = opts.GraphNode(
+                        name=info[1],
+                        symbol_size=symbol_size,
+                        value=val,
+                        itemstyle_opts=opts.ItemStyleOpts(
+                            color=(
+                                "rgb"
+                                + str(node_mapper.to_rgba(np.array(val), bytes=True))
+                            ),
+                            border_color=(
+                                "rgb"
+                                + str(node_mapper.to_rgba(np.array(val), bytes=True))
+                                if info[1] not in select_nodes
+                                else highlight_color
+                            ),
+                            border_width=(
+                                symbol_size / 10.0 if info[1] in select_nodes else 0
+                            ),
+                        ),
+                        label_opts=opts.LabelOpts(is_show=True, font_style="normal"),
+                    )
                     self.nodes.append(opt)
                 else:
                     src = info[1]
                     tgt = info[2]
-                    link_size = (100 - int(val) + (
-                            val - int(val))) / edge_width_ratio if is_lower_better else val / edge_width_ratio
+                    link_size = (
+                        (100 - int(val) + (val - int(val))) / edge_width_ratio
+                        if is_lower_better
+                        else val / edge_width_ratio
+                    )
                     self.edges_for_save.append(
-                        {"source": src, "target": tgt, "value": val})
-                    opt = opts.GraphLink(source=src, target=tgt, value=val,
-                                         linestyle_opts=opts.LineStyleOpts(curve=0.2, width=link_size,
-                                                                           color="rgb" + str(
-                                                                               edge_mapper.to_rgba(np.array(val),
-                                                                                                   bytes=True))))
+                        {"source": src, "target": tgt, "value": val}
+                    )
+                    opt = opts.GraphLink(
+                        source=src,
+                        target=tgt,
+                        value=val,
+                        linestyle_opts=opts.LineStyleOpts(
+                            curve=0.2,
+                            width=(
+                                link_size
+                                if src not in select_nodes or tgt not in select_nodes
+                                else link_size * 3.0
+                            ),
+                            color=(
+                                "rgb"
+                                + str(edge_mapper.to_rgba(np.array(val), bytes=True))
+                                if src not in select_nodes or tgt not in select_nodes
+                                else highlight_color
+                            ),
+                        ),
+                    )
                     self.edges.append(opt)
 
             self.categories = [{"name": _["name"]} for _ in self.nodes_for_save]
@@ -230,12 +310,12 @@ class GraphSaver:
         self.__out_pre = out_pre
 
     def save_graph(self, graph):
-        with open(self.__out_pre + ".nodes.csv", 'w') as fout:
+        with open(self.__out_pre + ".nodes.csv", "w") as fout:
             fout.write("Nodes,Weights\n")
             for _ in graph.nodes_for_save:
                 fout.write("%s,%s\n" % (_["name"], str(_["value"])))
 
-        with open(self.__out_pre + ".edges.csv", 'w') as fout:
+        with open(self.__out_pre + ".edges.csv", "w") as fout:
             fout.write("Source,Target,Weight\n")
             for _ in graph.edges_for_save:
                 fout.write("%s,%s,%s\n" % (_["source"], _["target"], _["value"]))
@@ -252,18 +332,23 @@ class NetLoader:
     def load_net(self, in_file):
         is_node = False
         is_edge = False
-        with open(in_file, 'r') as fin:
+        with open(in_file, "r") as fin:
             for line in fin:
-                if line[0] == '#':
+                if line[0] == "#":
                     data = line.strip().split()
                     if line.startswith("#TypeInfo"):
                         self.type_info = list(map(int, data[1:]))
                         continue
                     if line.startswith("#Sample"):
                         self.allele_name = data[1:-1]
-                        allele_idx = {self.allele_name[_]: _ for _ in range(len(self.allele_name))}
+                        allele_idx = {
+                            self.allele_name[_]: _ for _ in range(len(self.allele_name))
+                        }
                         self.nodes = [0 for _ in range(len(self.allele_name))]
-                        self.edges = [[0 for _ in range(len(self.allele_name))] for __ in range(len(self.allele_name))]
+                        self.edges = [
+                            [0 for _ in range(len(self.allele_name))]
+                            for __ in range(len(self.allele_name))
+                        ]
                         continue
                     if line.startswith("# Nodes"):
                         is_node = True
@@ -288,5 +373,5 @@ class NetLoader:
                         self.edges[gidx1][gidx2] = val
                         self.edges[gidx2][gidx1] = val
                 else:
-                    data = line.strip().split('\t')
+                    data = line.strip().split("\t")
                     self.best_genotype = array(list(map(int, data[1:-1])))

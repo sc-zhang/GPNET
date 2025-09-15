@@ -16,11 +16,11 @@ def plot_chart(nodes, edges, categories, out_html):
             layout="circular",
             is_rotate_label=True,
             linestyle_opts=opts.LineStyleOpts(curve=0.2),
-            label_opts=opts.LabelOpts(is_show=False)
+            label_opts=opts.LabelOpts(is_show=False),
         )
         .set_global_opts(
             legend_opts=opts.LegendOpts(is_show=False),
-            title_opts=opts.TitleOpts(title="")
+            title_opts=opts.TitleOpts(title=""),
         )
         .render(out_html)
     )
@@ -34,15 +34,30 @@ def main(args):
     node_size_ratio = args.node_ratio
     edge_width_ratio = args.edge_ratio
     is_lower_better = args.lower
+    selet_file = args.select
+    highlight_color = args.highlight_color
 
     Message.info("Loading data")
     dl = GraphLoader()
-    dl.load_data(in_data, is_lower_better, node_size_ratio, edge_width_ratio, node_cmap, edge_cmap)
+    dl.load_data(
+        in_data,
+        selet_file,
+        is_lower_better,
+        node_size_ratio,
+        edge_width_ratio,
+        highlight_color,
+        node_cmap,
+        edge_cmap,
+    )
 
     Message.info("Plotting")
     plot_chart(dl.nodes, dl.edges, dl.categories, out_html)
 
-    out_pre = out_html if not out_html.endswith(".html") else '.'.join(out_html.split('.')[:-1])
+    out_pre = (
+        out_html
+        if not out_html.endswith(".html")
+        else ".".join(out_html.split(".")[:-1])
+    )
     ds = GraphSaver(out_pre)
     ds.save_graph(dl)
     Message.info("Finished")
