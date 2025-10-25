@@ -21,42 +21,43 @@ class CWNET:
 
     def __convert_data(self, data_list):
         converted_data_db = {}
-        if self.__is_normalization:
-            min_avg = data_list[0][1]
-            max_avg = data_list[0][1]
 
-            min_std = data_list[0][2]
-            max_std = data_list[0][2]
+        min_avg = data_list[0][1]
+        max_avg = data_list[0][1]
 
-            for _, avg, stdv in data_list:
-                if not isnan(avg):
-                    if avg < min_avg or isnan(min_avg):
-                        min_avg = avg
-                    if avg > max_avg or isnan(max_avg):
-                        max_avg = avg
-                if not isnan(stdv):
-                    if stdv < min_std or isnan(min_std):
-                        min_std = stdv
-                    if stdv > max_std or isnan(max_std):
-                        max_std = stdv
+        min_std = data_list[0][2]
+        max_std = data_list[0][2]
 
-            mm_avg = max_avg - min_avg
-            mm_std = max_std - min_std
-            if mm_avg == 0:
-                mm_avg = 1.
-            if mm_std == 0:
-                mm_std = 1.
-            for _ in range(len(data_list)):
-                if self.__is_lower_better:
-                    if isnan(data_list[_][1]):
-                        data_list[_][1] = max_avg
-                    if isnan(data_list[_][2]):
-                        data_list[_][2] = max_std
-                else:
-                    if isnan(data_list[_][1]):
-                        data_list[_][1] = min_avg
-                    if isnan(data_list[_][2]):
-                        data_list[_][2] = min_std
+        for _, avg, stdv in data_list:
+            if not isnan(avg):
+                if avg < min_avg or isnan(min_avg):
+                    min_avg = avg
+                if avg > max_avg or isnan(max_avg):
+                    max_avg = avg
+            if not isnan(stdv):
+                if stdv < min_std or isnan(min_std):
+                    min_std = stdv
+                if stdv > max_std or isnan(max_std):
+                    max_std = stdv
+
+        mm_avg = max_avg - min_avg
+        mm_std = max_std - min_std
+        if mm_avg == 0:
+            mm_avg = 1.
+        if mm_std == 0:
+            mm_std = 1.
+        for _ in range(len(data_list)):
+            if self.__is_lower_better:
+                if isnan(data_list[_][1]):
+                    data_list[_][1] = max_avg
+                if isnan(data_list[_][2]):
+                    data_list[_][2] = max_std
+            else:
+                if isnan(data_list[_][1]):
+                    data_list[_][1] = min_avg
+                if isnan(data_list[_][2]):
+                    data_list[_][2] = min_std
+            if self.__is_normalization:
                 data_list[_][1] = int((data_list[_][1] - min_avg) * 99. / mm_avg)
                 data_list[_][2] = int((data_list[_][2] - min_std) * 99. / mm_std)
 
