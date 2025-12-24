@@ -7,7 +7,9 @@ from numpy import sum, average, std, isnan
 
 
 class CWNET:
-    def __init__(self, in_file, weight_file, is_lower_better, is_normalization, out_file):
+    def __init__(
+        self, in_file, weight_file, is_lower_better, is_normalization, out_file
+    ):
         self.__in_file = in_file
         self.__weight_file = weight_file
         self.__is_lower_better = is_lower_better
@@ -21,6 +23,8 @@ class CWNET:
 
     def __convert_data(self, data_list):
         converted_data_db = {}
+        if len(data_list) == 0:
+            return converted_data_db
 
         min_avg = data_list[0][1]
         max_avg = data_list[0][1]
@@ -43,9 +47,9 @@ class CWNET:
         mm_avg = max_avg - min_avg
         mm_std = max_std - min_std
         if mm_avg == 0:
-            mm_avg = 1.
+            mm_avg = 1.0
         if mm_std == 0:
-            mm_std = 1.
+            mm_std = 1.0
         for _ in range(len(data_list)):
             if self.__is_lower_better:
                 if isnan(data_list[_][1]):
@@ -58,24 +62,32 @@ class CWNET:
                 if isnan(data_list[_][2]):
                     data_list[_][2] = min_std
             if self.__is_normalization:
-                data_list[_][1] = int((data_list[_][1] - min_avg) * 99. / mm_avg)
-                data_list[_][2] = int((data_list[_][2] - min_std) * 99. / mm_std)
+                data_list[_][1] = int((data_list[_][1] - min_avg) * 99.0 / mm_avg)
+                data_list[_][2] = int((data_list[_][2] - min_std) * 99.0 / mm_std)
 
         # average higher and stdev lower is better
         for _, avg, stdv in sorted(data_list, key=lambda x: [x[1], -x[2]]):
             if isinstance(_, int):
                 if self.__is_lower_better:
-                    converted_data_db[_] = avg + stdv / 100. if self.__is_normalization else avg
+                    converted_data_db[_] = (
+                        avg + stdv / 100.0 if self.__is_normalization else avg
+                    )
                 else:
-                    converted_data_db[_] = avg + (0.99 - stdv / 100.) if self.__is_normalization else avg
+                    converted_data_db[_] = (
+                        avg + (0.99 - stdv / 100.0) if self.__is_normalization else avg
+                    )
             else:
                 idx1, idx2 = _
                 if idx1 not in converted_data_db:
                     converted_data_db[idx1] = {}
                 if self.__is_lower_better:
-                    converted_data_db[idx1][idx2] = avg + stdv / 100. if self.__is_normalization else avg
+                    converted_data_db[idx1][idx2] = (
+                        avg + stdv / 100.0 if self.__is_normalization else avg
+                    )
                 else:
-                    converted_data_db[idx1][idx2] = avg + (0.99 - stdv / 100.) if self.__is_normalization else avg
+                    converted_data_db[idx1][idx2] = (
+                        avg + (0.99 - stdv / 100.0) if self.__is_normalization else avg
+                    )
         return converted_data_db
 
     def generate_network(self, genotypes, phenotypes):
@@ -88,10 +100,18 @@ class CWNET:
                 if genotypes[_][site] == 1:
                     converted_data[site].append(phenotypes[_])
 
-        node_list = [[_,
-                      average(converted_data[_]) if len(converted_data[_]) >= 1 else float('nan'),
-                      std(converted_data[_]) if len(converted_data[_]) >= 1 else float('nan')]
-                     for _ in range(total_site_cnt)]
+        node_list = [
+            [
+                _,
+                (
+                    average(converted_data[_])
+                    if len(converted_data[_]) >= 1
+                    else float("nan")
+                ),
+                std(converted_data[_]) if len(converted_data[_]) >= 1 else float("nan"),
+            ]
+            for _ in range(total_site_cnt)
+        ]
 
         self.__nodes = self.__convert_data(node_list)
 
@@ -114,10 +134,22 @@ class CWNET:
                             if genotype[idx1] == genotype[idx2] == 1:
                                 converted_data[pair].append(phenotypes[_])
 
-        edge_list = [[pair,
-                      average(converted_data[pair]) if len(converted_data[pair]) > 0 else float('nan'),
-                      std(converted_data[pair]) if len(converted_data[pair]) > 1 else float('nan')]
-                     for pair in converted_data]
+        edge_list = [
+            [
+                pair,
+                (
+                    average(converted_data[pair])
+                    if len(converted_data[pair]) > 0
+                    else float("nan")
+                ),
+                (
+                    std(converted_data[pair])
+                    if len(converted_data[pair]) > 1
+                    else float("nan")
+                ),
+            ]
+            for pair in converted_data
+        ]
 
         self.__edges = self.__convert_data(edge_list)
 
@@ -142,22 +174,32 @@ class CWNET:
 
         for idx in range(len(self.__allele_name)):
             node_weight.append([self.__allele_name[idx], self.__nodes[idx]])
-        '''
+        """
         for idx1 in range(len(self.__allele_name) - 1):
             for idx2 in range(idx1 + 1, len(self.__allele_name)):
-        '''
+        """
         for idx1 in sorted(self.__edges):
             for idx2 in sorted(self.__edges[idx1]):
-                edge_weight.append([self.__allele_name[idx1], self.__allele_name[idx2], self.__edges[idx1][idx2]])
+                edge_weight.append(
+                    [
+                        self.__allele_name[idx1],
+                        self.__allele_name[idx2],
+                        self.__edges[idx1][idx2],
+                    ]
+                )
 
         # generate additional information of weight of nodes and weight of edges, sorted by weight descend
         additional_info = ["#\n# Nodes weights"]
-        for _ in sorted(node_weight, key=lambda x: x[-1], reverse=(not self.__is_lower_better)):
-            additional_info.append("# %s" % (' '.join(map(str, _))))
+        for _ in sorted(
+            node_weight, key=lambda x: x[-1], reverse=(not self.__is_lower_better)
+        ):
+            additional_info.append("# %s" % (" ".join(map(str, _))))
 
         additional_info.append("#\n# Edges weights")
-        for _ in sorted(edge_weight, key=lambda x: x[-1], reverse=(not self.__is_lower_better)):
-            additional_info.append("# %s" % (' '.join(map(str, _))))
+        for _ in sorted(
+            edge_weight, key=lambda x: x[-1], reverse=(not self.__is_lower_better)
+        ):
+            additional_info.append("# %s" % (" ".join(map(str, _))))
 
         return additional_info
 
@@ -173,8 +215,15 @@ class CWNET:
         Message.info("\tPID:%d Generating network" % getpid())
         self.generate_network(genotypes, phenotypes)
         Message.info("\tPID:%d Running SA" % getpid())
-        sa = SA(self.__type_info, self.__allele_name, self.__out_file,
-                self.calc_score, self.__is_lower_better, iterate=100, alpha=0.99)
+        sa = SA(
+            self.__type_info,
+            self.__allele_name,
+            self.__out_file,
+            self.calc_score,
+            self.__is_lower_better,
+            iterate=100,
+            alpha=0.99,
+        )
         sa.run()
         best_sa_data = sa.data
 
@@ -189,5 +238,10 @@ class CWNET:
 
         Message.info("\tPID:%d Saving predict data" % getpid())
         ds = DataSaver(self.__out_file)
-        ds.save_data(self.__type_info, self.__allele_name, [best_sa_data], [best_sa_pheno],
-                     self._get_node_edge_weight())
+        ds.save_data(
+            self.__type_info,
+            self.__allele_name,
+            [best_sa_data],
+            [best_sa_pheno],
+            self._get_node_edge_weight(),
+        )
