@@ -1,9 +1,16 @@
 from gpnet.workflow import simdata, predictor, visualizer, selector
+from gpnet.__version__ import __version__
 import argparse
 
 
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-v",
+        "--version",
+        action="version",
+        version="%(prog)s {version}".format(version=__version__),
+    )
     subparsers = parser.add_subparsers(title="sub commands")
 
     parser_simulator = subparsers.add_parser(

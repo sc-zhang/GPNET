@@ -4,10 +4,14 @@ from pathos.multiprocessing import Pool
 from os import path, makedirs
 
 
-def sub_process(idx, method, in_file, weight_file, is_lower_better, is_normalization, out_file):
+def sub_process(
+    idx, method, in_file, weight_file, is_lower_better, is_normalization, out_file
+):
     Message.info("Round %d" % (idx + 1))
     try:
-        func = globals()[method.upper()](in_file, weight_file, is_lower_better, is_normalization, out_file)
+        func = globals()[method.upper()](
+            in_file, weight_file, is_lower_better, is_normalization, out_file
+        )
         # func = eval(method.upper())(in_file, weight_file, is_lower_better, is_normalization, out_file)
         func.run()
     except Exception as e:
@@ -16,14 +20,14 @@ def sub_process(idx, method, in_file, weight_file, is_lower_better, is_normaliza
 
 def load_file_list(in_file):
     file_list = []
-    with open(in_file, 'r') as fin:
+    with open(in_file, "r") as fin:
         for line in fin:
             file_list.append(line.strip())
     return file_list
 
 
 def get_filename(full_file_path):
-    return full_file_path.split('/')[-1].split('.')[0]
+    return full_file_path.split("/")[-1].split(".")[0]
 
 
 def main(args):
@@ -38,7 +42,9 @@ def main(args):
 
     Message.info("Predicting")
     if is_single:
-        sub_process(0, method, in_file, weight_file, is_lower_better, is_normalization, output)
+        sub_process(
+            0, method, in_file, weight_file, is_lower_better, is_normalization, output
+        )
     else:
         in_file_list = load_file_list(in_file)
         weight_file_list = []
@@ -60,8 +66,18 @@ def main(args):
             else:
                 weight_file = None
                 out_file = path.join(output, "%s.txt" % in_fn)
-            pool.apply_async(sub_process,
-                             (i, method, in_file, weight_file, is_lower_better, is_normalization, out_file,))
+            pool.apply_async(
+                sub_process,
+                (
+                    i,
+                    method,
+                    in_file,
+                    weight_file,
+                    is_lower_better,
+                    is_normalization,
+                    out_file,
+                ),
+            )
         pool.close()
         pool.join()
     Message.info("Finished")
