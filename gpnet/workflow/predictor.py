@@ -5,12 +5,30 @@ from os import path, makedirs
 
 
 def sub_process(
-    idx, method, in_file, weight_file, is_lower_better, is_normalization, out_file
+    idx,
+    method,
+    in_file,
+    weight_file,
+    is_lower_better,
+    is_normalization,
+    is_store_iter,
+    top_edges,
+    min_edge_cnt,
+    step_size,
+    out_file,
 ):
     Message.info("Round %d" % (idx + 1))
     try:
         func = globals()[method.upper()](
-            in_file, weight_file, is_lower_better, is_normalization, out_file
+            in_file,
+            weight_file,
+            is_lower_better,
+            is_normalization,
+            is_store_iter,
+            top_edges,
+            min_edge_cnt,
+            step_size,
+            out_file,
         )
         # func = eval(method.upper())(in_file, weight_file, is_lower_better, is_normalization, out_file)
         func.run()
@@ -38,12 +56,26 @@ def main(args):
     method = args.method
     is_lower_better = args.lower
     is_normalization = args.normalization
+    is_store_iter = args.store_iter
+    top_edges = args.top_edges
+    min_edge_cnt = args.min_edge_count
+    step_size = args.step_size
     thread = args.thread
 
     Message.info("Predicting")
     if is_single:
         sub_process(
-            0, method, in_file, weight_file, is_lower_better, is_normalization, output
+            0,
+            method,
+            in_file,
+            weight_file,
+            is_lower_better,
+            is_normalization,
+            is_store_iter,
+            top_edges,
+            min_edge_cnt,
+            step_size,
+            output,
         )
     else:
         in_file_list = load_file_list(in_file)
@@ -75,6 +107,10 @@ def main(args):
                     weight_file,
                     is_lower_better,
                     is_normalization,
+                    is_store_iter,
+                    top_edges,
+                    min_edge_cnt,
+                    step_size,
                     out_file,
                 ),
             )

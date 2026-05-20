@@ -8,10 +8,22 @@ from os import getpid
 
 
 class MLR:
-    def __init__(self, in_file, weight_file, is_lower_better, is_normalization, out_file):
+    def __init__(
+        self,
+        in_file,
+        weight_file,
+        is_lower_better,
+        is_normalization,
+        is_store_iter,
+        top_edges,
+        min_edge_cnt,
+        step_size,
+        out_file,
+    ):
         self.__in_file = in_file
         self.__weight_file = weight_file
         self.__is_lower_better = is_lower_better
+        self.__is_store_iter = is_store_iter
         self.__out_file = out_file
         self.__out_model = out_file + ".pkl"
         self.__type_info = None
@@ -30,8 +42,10 @@ class MLR:
 
         # generate additional information of coefficients of each site, sorted by coefficients descend
         additional_info = ["#\n# Nodes coefficients"]
-        for _ in sorted(node_coefficients, key=lambda x: x[-1], reverse=(not self.__is_lower_better)):
-            additional_info.append("# %s" % (' '.join(map(str, _))))
+        for _ in sorted(
+            node_coefficients, key=lambda x: x[-1], reverse=(not self.__is_lower_better)
+        ):
+            additional_info.append("# %s" % (" ".join(map(str, _))))
 
         return additional_info
 
@@ -48,12 +62,20 @@ class MLR:
         x_train = genotypes
         y_train = phenotypes
         self.__model = self.__lrg.fit(x_train, y_train)
-        with open(self.__out_model, 'wb') as fout:
+        with open(self.__out_model, "wb") as fout:
             pickle.dump(self.__model, fout)
 
         Message.info("\tPID:%d Running SA" % getpid())
-        sa = SA(self.__type_info, self.__allele_name, self.__out_file,
-                self.predict, self.__is_lower_better, iterate=100, alpha=0.99)
+        sa = SA(
+            self.__type_info,
+            self.__allele_name,
+            self.__out_file,
+            self.predict,
+            self.__is_lower_better,
+            self.__is_store_iter,
+            iterate=100,
+            alpha=0.99,
+        )
         sa.run()
         best_sa_data = sa.data
 
@@ -68,5 +90,10 @@ class MLR:
 
         Message.info("\tPID:%d Saving predict data" % getpid())
         ds = DataSaver(self.__out_file)
-        ds.save_data(self.__type_info, self.__allele_name, [best_sa_data], [best_sa_pheno],
-                     self._get_node_coefficients())
+        ds.save_data(
+            self.__type_info,
+            self.__allele_name,
+            [best_sa_data],
+            [best_sa_pheno],
+            self._get_node_coefficients(),
+        )

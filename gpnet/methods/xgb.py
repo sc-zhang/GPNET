@@ -9,10 +9,22 @@ from os import getpid
 
 
 class XGB:
-    def __init__(self, in_file, weight_file, is_lower_better, is_normalization, out_file):
+    def __init__(
+        self,
+        in_file,
+        weight_file,
+        is_lower_better,
+        is_normalization,
+        is_store_iter,
+        top_edges,
+        min_edge_cnt,
+        step_size,
+        out_file,
+    ):
         self.__in_file = in_file
         self.__weight_file = weight_file
         self.__is_lower_better = is_lower_better
+        self.__is_store_iter = is_store_iter
         self.__out_file = out_file
         self.__out_model = out_file + ".pkl"
         self.__type_info = None
@@ -23,45 +35,58 @@ class XGB:
         return self.__model.predict(xgb.DMatrix([data]))[0]
 
     def __model_train(self, genotypes, phenotypes):
-        params = {'learning_rate': 0.001,
-                  'max_depth': 2,
-                  'objective': 'reg:squarederror',
-                  'gamma': 0,
-                  'subsample': 0.7,
-                  'colsample_bytree': 0.7,
-                  'reg_alpha': 0.005,
-                  'nthread': 1,
-                  'eval_metric': ['logloss', 'rmse', 'mae'],
-                  'eta': 0.3
-                  }
+        params = {
+            "learning_rate": 0.001,
+            "max_depth": 2,
+            "objective": "reg:squarederror",
+            "gamma": 0,
+            "subsample": 0.7,
+            "colsample_bytree": 0.7,
+            "reg_alpha": 0.005,
+            "nthread": 1,
+            "eval_metric": ["logloss", "rmse", "mae"],
+            "eta": 0.3,
+        }
 
-        x_train, x_test, y_train, y_test = train_test_split(genotypes, phenotypes, test_size=.25)
+        x_train, x_test, y_train, y_test = train_test_split(
+            genotypes, phenotypes, test_size=0.25
+        )
         dtrain = xgb.DMatrix(x_train, label=y_train)
         dtest = xgb.DMatrix(x_test, label=y_test)
 
-        res = xgb.cv(params, dtrain, num_boost_round=5000, metrics='rmse', early_stopping_rounds=25)
+        res = xgb.cv(
+            params,
+            dtrain,
+            num_boost_round=5000,
+            metrics="rmse",
+            early_stopping_rounds=25,
+        )
         best_nround = res.shape[0] - 1
 
-        watchlist = [(dtrain, 'train'), (dtest, 'eval')]
+        watchlist = [(dtrain, "train"), (dtest, "eval")]
         evals_result = {}
 
-        self.__model = xgb.train(params,
-                                 dtrain,
-                                 num_boost_round=best_nround,
-                                 evals=watchlist,
-                                 evals_result=evals_result,
-                                 verbose_eval=None)
+        self.__model = xgb.train(
+            params,
+            dtrain,
+            num_boost_round=best_nround,
+            evals=watchlist,
+            evals_result=evals_result,
+            verbose_eval=None,
+        )
 
     def _get_node_importance(self):
         node_coefficients = []
-        importance = self.__model.get_score(fmap='', importance_type='gain')
+        importance = self.__model.get_score(fmap="", importance_type="gain")
         for idx in range(len(self.__allele_name)):
             node_coefficients.append([self.__allele_name[idx], importance[idx]])
 
         # generate additional information of importance of each site, sorted by importance descend
         additional_info = ["#\n# Nodes importance"]
-        for _ in sorted(node_coefficients, key=lambda x: x[-1], reverse=(not self.__is_lower_better)):
-            additional_info.append("# %s" % (' '.join(map(str, _))))
+        for _ in sorted(
+            node_coefficients, key=lambda x: x[-1], reverse=(not self.__is_lower_better)
+        ):
+            additional_info.append("# %s" % (" ".join(map(str, _))))
 
         return additional_info
 
@@ -76,12 +101,20 @@ class XGB:
 
         Message.info("\tPID:%d Starting XGBoost" % getpid())
         self.__model_train(genotypes, phenotypes)
-        with open(self.__out_model, 'wb') as fout:
+        with open(self.__out_model, "wb") as fout:
             pickle.dump(self.__model, fout)
 
         Message.info("\tPID:%d Running SA" % getpid())
-        sa = SA(self.__type_info, self.__allele_name, self.__out_file,
-                self.predict, self.__is_lower_better, iterate=100, alpha=0.99)
+        sa = SA(
+            self.__type_info,
+            self.__allele_name,
+            self.__out_file,
+            self.predict,
+            self.__is_lower_better,
+            self.__is_store_iter,
+            iterate=100,
+            alpha=0.99,
+        )
         sa.run()
         best_sa_data = sa.data
 
@@ -96,4 +129,9 @@ class XGB:
 
         Message.info("\tPID:%d Saving predict data" % getpid())
         ds = DataSaver(self.__out_file)
-        ds.save_data(self.__type_info, [best_sa_data], [best_sa_pheno], self._get_node_importance())
+        ds.save_data(
+            self.__type_info,
+            [best_sa_data],
+            [best_sa_pheno],
+            self._get_node_importance(),
+        )

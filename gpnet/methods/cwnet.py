@@ -8,12 +8,22 @@ from numpy import sum, average, std, isnan
 
 class CWNET:
     def __init__(
-        self, in_file, weight_file, is_lower_better, is_normalization, out_file
+        self,
+        in_file,
+        weight_file,
+        is_lower_better,
+        is_normalization,
+        is_store_iter,
+        top_edges,
+        min_edge_cnt,
+        step_size,
+        out_file,
     ):
         self.__in_file = in_file
         self.__weight_file = weight_file
         self.__is_lower_better = is_lower_better
         self.__is_normalization = is_normalization
+        self.__is_store_iter = is_store_iter
         self.__out_file = out_file
         self.__type_info = None
         self.__allele_name = None
@@ -221,6 +231,7 @@ class CWNET:
             self.__out_file,
             self.calc_score,
             self.__is_lower_better,
+            self.__is_store_iter,
             iterate=100,
             alpha=0.99,
         )

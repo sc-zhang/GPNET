@@ -4,8 +4,19 @@ from gpnet.io.data_io import DataSaver
 
 
 class SA:
-    def __init__(self, type_info, allele_name, outfile,
-                 func, is_lower_better, iterate=100, t0=100, t_final=0.01, alpha=0.99):
+    def __init__(
+        self,
+        type_info,
+        allele_name,
+        outfile,
+        func,
+        is_lower_better,
+        is_store_iter,
+        iterate=100,
+        t0=100,
+        t_final=0.01,
+        alpha=0.99,
+    ):
         random.seed()
         self.__type_info = type_info
         self.__allele_name = allele_name
@@ -16,6 +27,7 @@ class SA:
             self.__inc_type_info.append(self.__inc_type_info[-1] + type_cnt)
         self.__func = func
         self.__is_lower_better = is_lower_better
+        self.__is_store_iter = is_store_iter
         self.__iterate = iterate
         self.__t0 = t0
         self.__t_final = t_final
@@ -36,7 +48,9 @@ class SA:
             change_site = random.randint(self.__site_cnt)
             change_type = random.randint(self.__type_info[change_site])
 
-            for cur_type in range(self.__inc_type_info[change_site], self.__inc_type_info[change_site + 1]):
+            for cur_type in range(
+                self.__inc_type_info[change_site], self.__inc_type_info[change_site + 1]
+            ):
                 if cur_type - self.__inc_type_info[change_site] != change_type:
                     new_data[cur_type] = 0
                 else:
@@ -73,19 +87,36 @@ class SA:
                 if self.__metrospolis(f, f_new):
                     f = f_new
                     self.data = deepcopy(new_data)
-                    if not self.__iter_data or self.data != self.__iter_data[-1]:
+                    if self.__is_store_iter and (
+                        not self.__iter_data or self.data != self.__iter_data[-1]
+                    ):
                         self.__iter_data.append(self.data)
                         self.__iter_score.append(f_new)
 
             self.__t = self.__t * self.__alpha
-
-        ds = DataSaver(self.__outfile)
-        ds.save_iter(self.__type_info, self.__allele_name, self.__iter_data, self.__iter_score)
+        if self.__is_store_iter:
+            ds = DataSaver(self.__outfile)
+            ds.save_iter(
+                self.__type_info,
+                self.__allele_name,
+                self.__iter_data,
+                self.__iter_score,
+            )
 
 
 class SelectSA:
-    def __init__(self, select_count, type_info, best_genotype, func,
-                 is_lower_better, iterate=100, t0=100, t_final=0.01, alpha=0.99):
+    def __init__(
+        self,
+        select_count,
+        type_info,
+        best_genotype,
+        func,
+        is_lower_better,
+        iterate=100,
+        t0=100,
+        t_final=0.01,
+        alpha=0.99,
+    ):
         random.seed()
         self.__type_info = type_info
         self.__site_cnt = len(type_info)
@@ -135,21 +166,16 @@ class SelectSA:
 
         src_list = list(src_set)
         non_absence_site = list(self.__non_absence_site)
-        for _ in range(1, random.randint(2, 10)):
-            if len(src_set) >= len(non_absence_site):
-                continue
-            src_set = set(src_list)
-            idx = random.randint(len(src_list))
-            src_site = src_list[idx]
+
+        idx = random.randint(len(src_list))
+        src_site = src_list[idx]
+        tgt_idx = random.randint(len(non_absence_site))
+        tgt_site = non_absence_site[tgt_idx]
+        while tgt_site in src_set:
             tgt_idx = random.randint(len(non_absence_site))
             tgt_site = non_absence_site[tgt_idx]
-            while tgt_site in src_set:
-                tgt_idx = random.randint(len(non_absence_site))
-                tgt_site = non_absence_site[tgt_idx]
-            new_data[src_site] = 0
-            new_data[tgt_site] = 1
-            src_list.remove(src_site)
-            src_list.append(tgt_site)
+        new_data[src_site] = 0
+        new_data[tgt_site] = 1
         return new_data
 
     def __metrospolis(self, f, f_new):

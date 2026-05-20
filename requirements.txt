@@ -3,3 +3,4 @@ xgboost
 scikit-learn
 pathos
 pyecharts
+matplotlib

@@ -1,10 +1,27 @@
 from gpnet.algorithm.SA import SelectSA
+import numpy as np
+from gpnet.lib import fast_ridge
 
 
 class SelectNet:
-    def __init__(self, select_count, type_info, allele_name, outfile, best_genotype, nodes, edges, is_lower_better):
+    def __init__(
+        self,
+        select_count,
+        type_info,
+        allele_name,
+        modelfile,
+        outfile,
+        best_genotype,
+        nodes,
+        edges,
+        is_lower_better,
+    ):
         self.__type_info = type_info
         self.__allele_name = allele_name
+        if modelfile is not None:
+            self.__model = fast_ridge.GraphModel.load(modelfile)
+        else:
+            self.__model = None
         self.__outfile = outfile
         self.__best_geno = best_genotype
         self.__nodes = nodes
@@ -28,16 +45,33 @@ class SelectNet:
                 score += self.__edges[available_sites[i]][available_sites[j]]
         return score
 
+    def model_predict_score(self, data):
+        return self.__model.predict(np.array([data], dtype=np.int8))[0]
+
     def run(self):
-        ssa = SelectSA(self.__select_count, self.__type_info, self.__best_geno,
-                       self.calc_score, self.__is_lower_better)
+        if self.__model is None:
+            ssa = SelectSA(
+                self.__select_count,
+                self.__type_info,
+                self.__best_geno,
+                self.calc_score,
+                self.__is_lower_better,
+            )
+        else:
+            ssa = SelectSA(
+                self.__select_count,
+                self.__type_info,
+                self.__best_geno,
+                self.model_predict_score,
+                self.__is_lower_better,
+            )
         if ssa.run():
             for _ in range(len(ssa.geno)):
                 if ssa.geno[_] == 1:
                     self.best_alleles.append(self.__allele_name[_])
 
-            with open(self.__outfile, 'w') as fout:
-                fout.write("%s\n" % ('\n'.join(self.best_alleles)))
+            with open(self.__outfile, "w") as fout:
+                fout.write("%s\n" % ("\n".join(self.best_alleles)))
             return True
         else:
             return False
