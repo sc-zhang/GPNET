@@ -66,6 +66,12 @@ def main():
         default=10,
     )
     parser_simulator.add_argument(
+        "--seed",
+        help="Random seed for simulating data, default=None",
+        type=int,
+        default=None,
+    )
+    parser_simulator.add_argument(
         "-t", "--thread", help="Threads, default=10", type=int, default=10
     )
     parser_simulator.set_defaults(func=simdata.main)
@@ -91,7 +97,7 @@ def main():
     parser_predictor.add_argument(
         "-m",
         "--method",
-        help="Predict method, can be: CWNET, CWNET_FR, MLR, " "default=CWNET",
+        help="Predict method, can be: CWNET, CWNET_FR, MLR, default=CWNET",
         choices=["CWNET", "CWNET_FR", "MLR"],
         default="CWNET",
     )
@@ -129,6 +135,24 @@ def main():
         help="Step size when searching for edges (default is 50)",
     )
     parser_predictor.add_argument(
+        "--iter",
+        help="Number of iterations for SA algorithm, default=100",
+        type=int,
+        default=100,
+    )
+    parser_predictor.add_argument(
+        "--alpha",
+        help="Alpha value for SA algorithm, default=0.99",
+        type=float,
+        default=0.99,
+    )
+    parser_predictor.add_argument(
+        "--seed",
+        help="Random seed for predictor, default=None",
+        type=int,
+        default=None,
+    )
+    parser_predictor.add_argument(
         "-t",
         "--thread",
         help="Threads, default=10, " "if input single file, auto set to 1",
@@ -162,6 +186,24 @@ def main():
         "--lower",
         help="Means lower phenotype is better, if this parameter is setting",
         action="store_true",
+    )
+    parser_selector.add_argument(
+        "--iter",
+        help="Number of iterations for SA algorithm, default=100",
+        type=int,
+        default=100,
+    )
+    parser_selector.add_argument(
+        "--alpha",
+        help="Alpha value for SA algorithm, default=0.99",
+        type=float,
+        default=0.99,
+    )
+    parser_selector.add_argument(
+        "--seed",
+        help="Random seed for selector, default=None",
+        type=int,
+        default=None,
     )
     parser_selector.set_defaults(func=selector.main)
 
