@@ -16,8 +16,12 @@ class SA:
         t0=100,
         t_final=0.01,
         alpha=0.99,
+        seed=None,
     ):
-        random.seed()
+        if seed:
+            random.seed(seed)
+        else:
+            random.seed()
         self.__type_info = type_info
         self.__allele_name = allele_name
         self.__outfile = outfile + ".iter"
@@ -116,8 +120,12 @@ class SelectSA:
         t0=100,
         t_final=0.01,
         alpha=0.99,
+        seed=None,
     ):
-        random.seed()
+        if seed:
+            random.seed(seed)
+        else:
+            random.seed()
         self.__type_info = type_info
         self.__site_cnt = len(type_info)
         self.__inc_type_info = [0]

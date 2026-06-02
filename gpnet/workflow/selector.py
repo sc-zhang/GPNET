@@ -9,12 +9,15 @@ def main(args):
     out_file = args.output
     select_cnt = args.count
     is_lower_better = args.lower
+    iter_cnt = args.iter
+    iter_alpha = args.alpha
+    seed = args.seed
 
-    Message.info("Loading data")
+    Message.info("Loading data: %s" % in_data)
     dl = NetLoader()
     dl.load_net(in_data)
 
-    Message.info("Selecting")
+    Message.info("Selecting with %d" % select_cnt)
     if select_cnt >= len(dl.type_info):
         Message.error(
             "Gene counts %d not greater than select count %d, Aborting..."
@@ -31,6 +34,9 @@ def main(args):
             dl.nodes,
             dl.edges,
             is_lower_better,
+            iter_cnt,
+            iter_alpha,
+            seed,
         )
         if selector.run():
             Message.info("Selected")

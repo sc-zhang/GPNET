@@ -19,6 +19,9 @@ class CWNET_FR:
         top_edges,
         min_edge_cnt,
         step_size,
+        iter_cnt,
+        iter_alpha,
+        seed,
         out_file,
     ):
         self.__in_file = in_file
@@ -31,6 +34,9 @@ class CWNET_FR:
         self.__allele_name = None
         self.__top_edges = top_edges
         self.__step_size = step_size
+        self.__iter = iter_cnt
+        self.__alpha = iter_alpha
+        self.__seed = seed
         self.__min_edge_cnt = min_edge_cnt
         self.__model = None
 
@@ -54,7 +60,12 @@ class CWNET_FR:
         )
 
         a1, a2, best_k = model.fit(
-            X_train, y_train, self.__top_edges, self.__step_size, self.__min_edge_cnt
+            X_train,
+            y_train,
+            self.__top_edges,
+            self.__step_size,
+            self.__min_edge_cnt,
+            threads=1,
         )
 
         Message.info(f"\tTraining finished")
@@ -118,8 +129,9 @@ class CWNET_FR:
             self.predict,
             self.__is_lower_better,
             self.__is_store_iter,
-            iterate=100,
-            alpha=0.99,
+            iterate=self.__iter,
+            alpha=self.__alpha,
+            seed=self.__seed,
         )
         sa.run()
 

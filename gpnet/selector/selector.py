@@ -15,6 +15,9 @@ class SelectNet:
         nodes,
         edges,
         is_lower_better,
+        iter,
+        alpha,
+        seed,
     ):
         self.__type_info = type_info
         self.__allele_name = allele_name
@@ -28,6 +31,9 @@ class SelectNet:
         self.__edges = edges
         self.__select_count = select_count
         self.__is_lower_better = is_lower_better
+        self.__iter = iter
+        self.__alpha = alpha
+        self.__seed = seed
         self.best_alleles = []
 
     def calc_score(self, data):
@@ -56,6 +62,9 @@ class SelectNet:
                 self.__best_geno,
                 self.calc_score,
                 self.__is_lower_better,
+                iterate=self.__iter,
+                alpha=self.__alpha,
+                seed=self.__seed,
             )
         else:
             ssa = SelectSA(
@@ -64,6 +73,9 @@ class SelectNet:
                 self.__best_geno,
                 self.model_predict_score,
                 self.__is_lower_better,
+                iterate=self.__iter,
+                alpha=self.__alpha,
+                seed=self.__seed,
             )
         if ssa.run():
             for _ in range(len(ssa.geno)):

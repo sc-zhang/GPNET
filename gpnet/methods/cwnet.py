@@ -17,6 +17,9 @@ class CWNET:
         top_edges,
         min_edge_cnt,
         step_size,
+        iter_cnt,
+        iter_alpha,
+        seed,
         out_file,
     ):
         self.__in_file = in_file
@@ -24,6 +27,9 @@ class CWNET:
         self.__is_lower_better = is_lower_better
         self.__is_normalization = is_normalization
         self.__is_store_iter = is_store_iter
+        self.__iter = iter_cnt
+        self.__alpha = iter_alpha
+        self.__seed = seed
         self.__out_file = out_file
         self.__type_info = None
         self.__allele_name = None
@@ -232,8 +238,9 @@ class CWNET:
             self.calc_score,
             self.__is_lower_better,
             self.__is_store_iter,
-            iterate=100,
-            alpha=0.99,
+            iterate=self.__iter,
+            alpha=self.__alpha,
+            seed=self.__seed,
         )
         sa.run()
         best_sa_data = sa.data

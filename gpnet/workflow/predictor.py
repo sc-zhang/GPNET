@@ -15,6 +15,9 @@ def sub_process(
     top_edges,
     min_edge_cnt,
     step_size,
+    iter_cnt,
+    iter_alpha,
+    seed,
     out_file,
 ):
     Message.info("Round %d" % (idx + 1))
@@ -28,6 +31,9 @@ def sub_process(
             top_edges,
             min_edge_cnt,
             step_size,
+            iter_cnt,
+            iter_alpha,
+            seed,
             out_file,
         )
         # func = eval(method.upper())(in_file, weight_file, is_lower_better, is_normalization, out_file)
@@ -60,6 +66,9 @@ def main(args):
     top_edges = args.top_edges
     min_edge_cnt = args.min_edge_count
     step_size = args.step_size
+    iter_cnt = args.iter
+    iter_alpha = args.alpha
+    seed = args.seed
     thread = args.thread
 
     Message.info("Predicting")
@@ -75,6 +84,9 @@ def main(args):
             top_edges,
             min_edge_cnt,
             step_size,
+            iter_cnt,
+            iter_alpha,
+            seed,
             output,
         )
     else:
@@ -111,6 +123,9 @@ def main(args):
                     top_edges,
                     min_edge_cnt,
                     step_size,
+                    iter_cnt,
+                    iter_alpha,
+                    seed,
                     out_file,
                 ),
             )

@@ -19,12 +19,18 @@ class XGB:
         top_edges,
         min_edge_cnt,
         step_size,
+        iter_cnt,
+        iter_alpha,
+        seed,
         out_file,
     ):
         self.__in_file = in_file
         self.__weight_file = weight_file
         self.__is_lower_better = is_lower_better
         self.__is_store_iter = is_store_iter
+        self.__iter = iter_cnt
+        self.__alpha = iter_alpha
+        self.__seed = seed
         self.__out_file = out_file
         self.__out_model = out_file + ".pkl"
         self.__type_info = None
@@ -112,8 +118,9 @@ class XGB:
             self.predict,
             self.__is_lower_better,
             self.__is_store_iter,
-            iterate=100,
-            alpha=0.99,
+            iterate=self.__iter,
+            alpha=self.__alpha,
+            seed=self.__seed,
         )
         sa.run()
         best_sa_data = sa.data
