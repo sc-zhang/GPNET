@@ -135,6 +135,13 @@ def main():
         help="Step size when searching for edges (default is 50)",
     )
     parser_predictor.add_argument(
+        "--optim",
+        help="Optimize method for predicting best one, default=SA",
+        type=str,
+        choices=["SA", "GA"],
+        default="SA",
+    )
+    parser_predictor.add_argument(
         "--iter",
         help="Number of iterations for SA algorithm, default=100",
         type=int,
@@ -145,6 +152,30 @@ def main():
         help="Alpha value for SA algorithm, default=0.99",
         type=float,
         default=0.99,
+    )
+    parser_predictor.add_argument(
+        "--n_gen",
+        help="Number of generations for GA algorithm, default=1000",
+        type=int,
+        default=1000,
+    )
+    parser_predictor.add_argument(
+        "--pop_size",
+        help="Number of individuals in population for GA algorithm, default=200",
+        type=int,
+        default=200,
+    )
+    parser_predictor.add_argument(
+        "--cross_rate",
+        help="Cross rate of crossover for GA algorithm, default=0.8",
+        type=float,
+        default=0.8,
+    )
+    parser_predictor.add_argument(
+        "--mutation_rate",
+        help="Mutation rate for GA algorithm, default=0.05",
+        type=float,
+        default=0.05,
     )
     parser_predictor.add_argument(
         "--seed",

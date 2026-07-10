@@ -15,8 +15,7 @@ def sub_process(
     top_edges,
     min_edge_cnt,
     step_size,
-    iter_cnt,
-    iter_alpha,
+    optim_args,
     seed,
     out_file,
 ):
@@ -31,8 +30,7 @@ def sub_process(
             top_edges,
             min_edge_cnt,
             step_size,
-            iter_cnt,
-            iter_alpha,
+            optim_args,
             seed,
             out_file,
         )
@@ -66,8 +64,18 @@ def main(args):
     top_edges = args.top_edges
     min_edge_cnt = args.min_edge_count
     step_size = args.step_size
-    iter_cnt = args.iter
-    iter_alpha = args.alpha
+
+    optim_args = {}
+    if args.optim == "SA":
+        optim_args = {"Method": "SA", "iter_cnt": args.iter, "iter_alpha": args.alpha}
+    elif args.optim == "GA":
+        optim_args = {
+            "Method": "GA",
+            "n_generations": args.n_gen,
+            "pop_size": args.pop_size,
+            "cross_rate": args.cross_rate,
+            "mutation_rate": args.mutation_rate,
+        }
     seed = args.seed
     thread = args.thread
 
@@ -84,8 +92,7 @@ def main(args):
             top_edges,
             min_edge_cnt,
             step_size,
-            iter_cnt,
-            iter_alpha,
+            optim_args,
             seed,
             output,
         )
@@ -123,8 +130,7 @@ def main(args):
                     top_edges,
                     min_edge_cnt,
                     step_size,
-                    iter_cnt,
-                    iter_alpha,
+                    optim_args,
                     seed,
                     out_file,
                 ),

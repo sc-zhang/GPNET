@@ -78,7 +78,8 @@ options:
 - predictor is used for predicting best genotypes with phenotypes from population.
 
 ```bash
-usage: gpnet.py predictor [-h] -i INPUT [-w WEIGHT] -o OUTPUT [--single] [-m {CWNET,CWNET_FR,MLR}] [-l] [--normalization] [--store_iter] [--top_edges TOP_EDGES] [--min_edge_count MIN_EDGE_COUNT] [--step_size STEP_SIZE] [--iter ITER] [--alpha ALPHA] [--seed SEED] [-t THREAD]
+usage: gpnet.py predictor [-h] -i INPUT [-w WEIGHT] -o OUTPUT [--single] [-m {CWNET,CWNET_FR,MLR}] [-l] [--normalization] [--store_iter] [--top_edges TOP_EDGES] [--min_edge_count MIN_EDGE_COUNT] [--step_size STEP_SIZE] [--optim {SA,GA}] [--iter ITER] [--alpha ALPHA] [--n_gen N_GEN] [--pop_size POP_SIZE]
+                          [--cross_rate CROSS_RATE] [--mutation_rate MUTATION_RATE] [--seed SEED] [-t THREAD]
 
 options:
   -h, --help            show this help message and exit
@@ -97,8 +98,15 @@ options:
                         Minimum frequency of edge appearance
   --step_size STEP_SIZE
                         Step size when searching for edges (default is 50)
+  --optim {SA,GA}       Optimize method for predicting best one, default=SA
   --iter ITER           Number of iterations for SA algorithm, default=100
-  --alpha ALPHA         Alpha value for SA algorithm, default=0.01
+  --alpha ALPHA         Alpha value for SA algorithm, default=0.99
+  --n_gen N_GEN         Number of generations for GA algorithm, default=1000
+  --pop_size POP_SIZE   Number of individuals in population for GA algorithm, default=200
+  --cross_rate CROSS_RATE
+                        Cross rate of crossover for GA algorithm, default=0.8
+  --mutation_rate MUTATION_RATE
+                        Mutation rate for GA algorithm, default=0.05
   --seed SEED           Random seed for predictor, default=None
   -t, --thread THREAD   Threads, default=10, if input single file, auto set to 1
 ```
@@ -107,9 +115,11 @@ options:
 
 1. Input data file for real data can be got in 08.VariantMatrix folder which is generated
    by [MATE](https://github.com/sc-zhang/MATE) we developed.
-2. List file is a text file, one line contain one data/weight file path.
-3. Weight file or list file contain path of weight files is not need with real data.
-4. If *--single* is setting, that means the file provided with *--input* and *--weight* parameter is not a list file,
+2. optimize method could be one of SA (Simulated Annealing) and GA (Genetic Algorithm), the iter/alpha parameters only
+   worked with SA and n_gen/pop_size/cross_rate/mutation_rate parameters only worked with GA.
+3. List file is a text file, one line contain one data/weight file path.
+4. Weight file or list file contain path of weight files is not need with real data.
+5. If *--single* is setting, that means the file provided with *--input* and *--weight* parameter is not a list file,
    but a data/weight file.
 
 

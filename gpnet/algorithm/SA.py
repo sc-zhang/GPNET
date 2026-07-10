@@ -13,12 +13,15 @@ class SA:
         func,
         is_lower_better,
         is_store_iter,
-        iterate=100,
-        t0=100,
-        t_final=0.01,
-        alpha=0.99,
         seed=None,
+        **kwargs,
     ):
+        """
+        iterate: int, number of iterations, default=100
+        t0: float, initial temperature, default=100.
+        t_final: float, final temperature, default=0.01
+        alpha: float, temperature decend rate, default=0.99
+        """
         if seed:
             random.seed(seed)
         else:
@@ -33,11 +36,11 @@ class SA:
         self.__func = func
         self.__is_lower_better = is_lower_better
         self.__is_store_iter = is_store_iter
-        self.__iterate = iterate
-        self.__t0 = t0
-        self.__t_final = t_final
-        self.__t = t0
-        self.__alpha = alpha
+        self.__iterate = kwargs.get("iterate", 100)
+        self.__t0 = kwargs.get("t0", 100.0)
+        self.__t_final = kwargs.get("t_final", 0.01)
+        self.__alpha = kwargs.get("alpha", 0.99)
+        self.__t = self.__t0
         self.__total_type_cnt = sum(type_info)
         self.data = [0 for _ in range(self.__total_type_cnt)]
         self.__iter_data = []
