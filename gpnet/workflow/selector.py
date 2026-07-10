@@ -6,6 +6,7 @@ from gpnet.selector.selector import SelectNet
 def main(args):
     in_data = args.input
     model_file = args.model
+    mat_file = args.mat
     out_file = args.output
     select_cnt = args.count
     is_lower_better = args.lower
@@ -29,6 +30,7 @@ def main(args):
             dl.type_info,
             dl.allele_name,
             model_file,
+            mat_file,
             out_file,
             dl.best_genotype,
             dl.nodes,

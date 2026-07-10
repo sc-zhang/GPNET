@@ -9,7 +9,8 @@ class SelectNet:
         select_count,
         type_info,
         allele_name,
-        modelfile,
+        model_file,
+        mat_file,
         outfile,
         best_genotype,
         nodes,
@@ -21,10 +22,12 @@ class SelectNet:
     ):
         self.__type_info = type_info
         self.__allele_name = allele_name
-        if modelfile is not None:
-            self.__model = fast_ridge.GraphModel.load(modelfile)
+        if model_file is not None:
+            self.__model = fast_ridge.GraphModel.load(model_file)
         else:
             self.__model = None
+
+        self.__mat_file = mat_file
         self.__outfile = outfile
         self.__best_geno = best_genotype
         self.__nodes = nodes
@@ -60,6 +63,7 @@ class SelectNet:
                 self.__select_count,
                 self.__type_info,
                 self.__best_geno,
+                self.__mat_file,
                 self.calc_score,
                 self.__is_lower_better,
                 iterate=self.__iter,
@@ -71,6 +75,7 @@ class SelectNet:
                 self.__select_count,
                 self.__type_info,
                 self.__best_geno,
+                self.__mat_file,
                 self.model_predict_score,
                 self.__is_lower_better,
                 iterate=self.__iter,
@@ -78,8 +83,8 @@ class SelectNet:
                 seed=self.__seed,
             )
         if ssa.run():
-            for _ in range(len(ssa.geno)):
-                if ssa.geno[_] == 1:
+            for _ in range(len(ssa.data)):
+                if ssa.data[_] == 1:
                     self.best_alleles.append(self.__allele_name[_])
 
             with open(self.__outfile, "w") as fout:

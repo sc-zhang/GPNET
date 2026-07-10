@@ -1,6 +1,7 @@
 from copy import deepcopy
-from numpy import random, exp, sum
-from gpnet.io.data_io import DataSaver
+from numpy import random, exp, sum, matrix
+from gpnet.io.data_io import DataSaver, DataLoader
+from gpnet.algorithm import check_comb_exists
 
 
 class SA:
@@ -114,6 +115,7 @@ class SelectSA:
         select_count,
         type_info,
         best_genotype,
+        mat_file,
         func,
         is_lower_better,
         iterate=100,
@@ -152,18 +154,61 @@ class SelectSA:
                     self.geno_db[_] = __
                     break
 
-        self.data = [0 for _ in range(self.__site_cnt)]
+        self.__col_masks = None
+        self.__col_popcnt = None
+        init_data = []
+        if mat_file is not None:
+            dl = DataLoader()
+            dl.load_genotype(mat_file)
+            pop_geno = matrix(dl.genotypes)
+            self.__col_masks, self.__col_popcnt = check_comb_exists.build_column_masks(
+                pop_geno
+            )
+            for smp_idx in range(len(dl.genotypes)):
+                init_data = []
+                for _ in range(self.__site_cnt):
+                    sp = self.__inc_type_info[_]
+                    ep = self.__inc_type_info[_ + 1]
+                    for __ in range(sp, ep):
+                        if (
+                            __ not in self.__non_absence_site
+                            and best_genotype[__] == dl.genotypes[smp_idx][__] == 1
+                        ):
+                            init_data.append(_)
+                            break
+                    if len(init_data) >= self.__select_count:
+                        break
+                if len(init_data) >= self.__select_count:
+                    break
+
+        self.__data = [0 for _ in range(self.__site_cnt)]
         # set first select count of genes to 1
-        self.__data_init__cnt = 0
-        for _ in range(self.__site_cnt):
-            if _ in self.__non_absence_site:
+        self.__data_init_cnt = 0
+        if init_data:
+            for _ in init_data:
                 self.data[_] = 1
-                self.__data_init__cnt += 1
-            if self.__data_init__cnt >= self.__select_count:
-                break
+                self.__data_init_cnt += 1
+                if self.__data_init_cnt >= self.__select_count:
+                    break
+        else:
+            for _ in range(self.__site_cnt):
+                if _ in self.__non_absence_site:
+                    self.data[_] = 1
+                    self.__data_init_cnt += 1
+                if self.__data_init_cnt >= self.__select_count:
+                    break
         self.geno = [0 for _ in range(self.__total_type_cnt)]
         for _ in range(self.__select_count):
             self.geno[self.geno_db[_]] = 1
+
+    def __to_geno(self, new_data):
+        new_geno = [0 for _ in range(self.__total_type_cnt)]
+        new_idx = []
+        for _ in range(len(new_data)):
+            if new_data[_] == 1:
+                new_geno[self.geno_db[_]] = 1
+                new_idx.append(self.geno_db[_])
+        return new_idx, new_geno
 
     def __generate_new(self):
         new_data = deepcopy(self.data)
@@ -177,14 +222,25 @@ class SelectSA:
 
         idx = random.randint(len(src_list))
         src_site = src_list[idx]
-        tgt_idx = random.randint(len(non_absence_site))
-        tgt_site = non_absence_site[tgt_idx]
-        while tgt_site in src_set:
+        try_cnt = 0
+        while try_cnt < 1e3:
             tgt_idx = random.randint(len(non_absence_site))
             tgt_site = non_absence_site[tgt_idx]
-        new_data[src_site] = 0
-        new_data[tgt_site] = 1
-        return new_data
+            while tgt_site in src_set:
+                tgt_idx = random.randint(len(non_absence_site))
+                tgt_site = non_absence_site[tgt_idx]
+            new_data[src_site] = 0
+            new_data[tgt_site] = 1
+            new_idx, new_geno = self.__to_geno(new_data)
+            if check_comb_exists.exists_covering_row(
+                new_idx, self.__col_masks, self.__col_popcnt
+            ):
+                break
+            # restore change
+            new_data[src_site] = 1
+            new_data[tgt_site] = 0
+            try_cnt += 1
+        return new_data, new_geno
 
     def __metrospolis(self, f, f_new):
         if self.__is_lower_better:
@@ -207,16 +263,12 @@ class SelectSA:
                     return 0
 
     def run(self):
-        if self.__data_init__cnt < self.__select_count:
+        if self.__data_init_cnt < self.__select_count:
             return False
         f = self.__func(self.geno)
         while self.__t > self.__t_final:
             for _ in range(self.__iterate):
-                new_data = self.__generate_new()
-                new_geno = [0 for _ in range(self.__total_type_cnt)]
-                for _ in range(len(new_data)):
-                    if new_data[_] == 1:
-                        new_geno[self.geno_db[_]] = 1
+                new_data, new_geno = self.__generate_new()
                 f_new = self.__func(new_geno)
                 if self.__metrospolis(f, f_new):
                     f = f_new
