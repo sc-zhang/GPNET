@@ -2,5 +2,5 @@ numpy
 xgboost
 scikit-learn
 pathos
-pyecharts
+networkx
 matplotlib
