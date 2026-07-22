@@ -200,15 +200,6 @@ class GraphLoader:
                     for _ in range(1, len(data) - 1):
                         if data[_] == "1":
                             predict_nodes.add(sample_list[_])
-            if is_lower_better:
-                if node_cmap.endswith("_r"):
-                    node_cmap.replace("_r", "")
-                else:
-                    node_cmap += "_r"
-                if edge_cmap.endswith("_r"):
-                    edge_cmap.replace("_r", "")
-                else:
-                    edge_cmap += "_r"
 
 
 class GraphSaver:

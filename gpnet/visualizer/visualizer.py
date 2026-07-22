@@ -30,6 +30,15 @@ class GraphVisualizer(object):
         self.__edge_width_ratio = edge_width_ratio
         self.__is_lower_better = is_lower_better
         self.__highlight_color = highlight_color
+        if is_lower_better:
+            if node_cmap.endswith("_r"):
+                node_cmap.replace("_r", "")
+            else:
+                node_cmap += "_r"
+            if edge_cmap.endswith("_r"):
+                edge_cmap.replace("_r", "")
+            else:
+                edge_cmap += "_r"
         self.__node_cmap = node_cmap
         self.__edge_cmap = edge_cmap
         self.__label_top_nodes = label_top_nodes
@@ -130,7 +139,6 @@ class GraphVisualizer(object):
         for idx, node in enumerate(sorted_nodes, start=1):
             node_number_map[node] = idx
 
-        edges_sorted = sorted(valid_edges, key=lambda e: e[2])
         edges_sorted_by_weight = sorted(
             valid_edges, key=lambda e: e[2], reverse=rank_reverse
         )
