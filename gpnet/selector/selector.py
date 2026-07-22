@@ -92,3 +92,57 @@ class SelectNet:
             return True
         else:
             return False
+
+
+class SelectNetSimple:
+    def __init__(
+        self,
+        select_count,
+        allele_name,
+        outfile,
+        best_genotype,
+        nodes,
+        edges,
+        is_lower_better,
+    ):
+        self.__allele_name = allele_name
+        self.__outfile = outfile
+        self.__best_geno = best_genotype
+        self.__nodes = nodes
+        self.__edges = edges
+        self.__select_count = select_count
+        self.__is_lower_better = is_lower_better
+        self.best_alleles = []
+
+    def run(self):
+        best_alleles = set()
+        for idx in range(len(self.__best_geno)):
+            if self.__best_geno[idx] == 1:
+                best_alleles.add(self.__allele_name[idx])
+
+        node_weights_db = {}
+        for idx in range(len(self.__allele_name)):
+            node_weights_db[self.__allele_name[idx]] = self.__nodes[idx]
+
+        best_sel = []
+        best_used_genes = set()
+        for node in sorted(
+            node_weights_db,
+            key=lambda x: node_weights_db[x],
+            reverse=False if self.__is_lower_better else True,
+        ):
+            if node not in best_alleles:
+                continue
+            gn, _ = node.split("-")
+            if gn in best_used_genes:
+                continue
+            best_sel.append(node)
+            best_used_genes.add(gn)
+            if len(best_sel) >= self.__select_count:
+                break
+
+        if len(best_sel) >= self.__select_count:
+            with open(self.__outfile, "w") as fout:
+                fout.write("%s\n" % ("\n".join(best_sel)))
+            return True
+        return False

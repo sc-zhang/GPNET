@@ -222,6 +222,13 @@ def main():
         action="store_true",
     )
     parser_selector.add_argument(
+        "--method",
+        help="Method for selecting best n alleles, default=SA",
+        type=str,
+        choices=["SA", "Simple"],
+        default="SA",
+    )
+    parser_selector.add_argument(
         "--iter",
         help="Number of iterations for SA algorithm, default=100",
         type=int,

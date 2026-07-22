@@ -1,6 +1,6 @@
 from gpnet.io.data_io import NetLoader
 from gpnet.io.message import Message
-from gpnet.selector.selector import SelectNet
+from gpnet.selector.selector import SelectNet, SelectNetSimple
 
 
 def main(args):
@@ -10,6 +10,7 @@ def main(args):
     out_file = args.output
     select_cnt = args.count
     is_lower_better = args.lower
+    method = args.method
     iter_cnt = args.iter
     iter_alpha = args.alpha
     seed = args.seed
@@ -25,24 +26,38 @@ def main(args):
             % (len(dl.type_info), select_cnt)
         )
     else:
-        selector = SelectNet(
-            select_cnt,
-            dl.type_info,
-            dl.allele_name,
-            model_file,
-            mat_file,
-            out_file,
-            dl.best_genotype,
-            dl.nodes,
-            dl.edges,
-            is_lower_better,
-            iter_cnt,
-            iter_alpha,
-            seed,
-        )
-        if selector.run():
-            Message.info("Selected")
-        else:
-            Message.error("Unable select genes")
-
+        if method == "SA":
+            selector = SelectNet(
+                select_cnt,
+                dl.type_info,
+                dl.allele_name,
+                model_file,
+                mat_file,
+                out_file,
+                dl.best_genotype,
+                dl.nodes,
+                dl.edges,
+                is_lower_better,
+                iter_cnt,
+                iter_alpha,
+                seed,
+            )
+            if selector.run():
+                Message.info("Selected")
+            else:
+                Message.error("Unable select genes")
+        elif method == "Simple":
+            selector = SelectNetSimple(
+                select_cnt,
+                dl.allele_name,
+                out_file,
+                dl.best_genotype,
+                dl.nodes,
+                dl.edges,
+                is_lower_better,
+            )
+            if selector.run():
+                Message.info("Selected")
+            else:
+                Message.error("Unable select genes")
     Message.info("Finished")
