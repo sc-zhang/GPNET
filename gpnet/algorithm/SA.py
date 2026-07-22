@@ -184,7 +184,7 @@ class SelectSA:
                 if len(init_data) >= self.__select_count:
                     break
 
-        self.__data = [0 for _ in range(self.__site_cnt)]
+        self.data = [0 for _ in range(self.__site_cnt)]
         # set first select count of genes to 1
         self.__data_init_cnt = 0
         if init_data:
