@@ -19,7 +19,7 @@ def sub_process(
     seed,
     out_file,
 ):
-    Message.info("Round %d" % (idx + 1))
+    Message.info("Predict %d" % (idx + 1))
     try:
         func = globals()[method.upper()](
             in_file,
