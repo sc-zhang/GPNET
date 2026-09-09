@@ -87,7 +87,9 @@ class SA:
                     return 0
 
     def run(self):
+        best_data = deepcopy(self.data)
         f = self.__func(self.data)
+        best_f = f
         while self.__t > self.__t_final:
             for _ in range(self.__iterate):
                 new_data = self.__generate_new()
@@ -100,8 +102,11 @@ class SA:
                     ):
                         self.__iter_data.append(self.data)
                         self.__iter_score.append(f_new)
-
+                if f_new > best_f:
+                    best_f = f_new
+                    best_data = deepcopy(new_data)
             self.__t = self.__t * self.__alpha
+        self.data = deepcopy(best_data)
         if self.__is_store_iter:
             ds = DataSaver(self.__outfile)
             ds.save_iter(
@@ -268,7 +273,10 @@ class SelectSA:
     def run(self):
         if self.__data_init_cnt < self.__select_count:
             return False
+        best_geno = deepcopy(self.geno)
+        best_data = deepcopy(self.data)
         f = self.__func(self.geno)
+        best_f = f
         while self.__t > self.__t_final:
             for _ in range(self.__iterate):
                 new_data, new_geno = self.__generate_new()
@@ -277,6 +285,11 @@ class SelectSA:
                     f = f_new
                     self.data = deepcopy(new_data)
                     self.geno = deepcopy(new_geno)
-
+                if f_new > best_f:
+                    best_f = f_new
+                    best_data = deepcopy(new_data)
+                    best_geno = deepcopy(new_geno)
             self.__t = self.__t * self.__alpha
+        self.data = deepcopy(best_data)
+        self.geno = deepcopy(best_geno)
         return True
