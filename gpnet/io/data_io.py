@@ -13,19 +13,21 @@ class DataSaver:
         # [site1_type_count, site2_type_count, ..., siteN_type_count]
         with open(self.__out_file, "w") as fout:
             fout.write("#TypeInfo\t%s\n" % ("\t".join(map(str, type_info))))
-            fout.write("#Sample\t")
-            for _ in allele_name:
-                fout.write("%s\t" % _)
-            fout.write("Phenotype\n")
-            for _ in range(len(genotypes)):
-                fout.write(
-                    "%d\t%s\t%s\n"
-                    % (
-                        _ + 1,
-                        "\t".join(list(map(str, list(genotypes[_])))),
-                        str(phenotypes[_]),
-                    )
-                )
+            fout.write("#Sample\t%s\tPhenotype\n" % ("\t".join(allele_name)))
+            buffer = []
+            buffer_size = 1000
+
+            for i, (geno, pheno) in enumerate(zip(genotypes, phenotypes), 1):
+                geno_str = "\t".join(map(str, geno))
+                buffer.append(f"{i}\t{geno_str}\t{pheno}\n")
+
+                if len(buffer) >= buffer_size:
+                    fout.write("".join(buffer))
+                    buffer.clear()
+            if buffer:
+                fout.write("".join(buffer))
+                buffer.clear()
+
             if additional_info:
                 fout.write("%s\n" % ("\n".join(additional_info)))
 
@@ -34,19 +36,20 @@ class DataSaver:
         # [site1_type_count, site2_type_count, ..., siteN_type_count]
         with open(self.__out_file, "w") as fout:
             fout.write("#TypeInfo\t%s\n" % ("\t".join(map(str, type_info))))
-            fout.write("#Iteration\t")
-            for _ in allele_name:
-                fout.write("%s\t" % _)
-            fout.write("Score\n")
-            for _ in range(len(score)):
-                fout.write(
-                    "%d\t%s\t%s\n"
-                    % (
-                        _ + 1,
-                        "\t".join(list(map(str, list(genotypes[_])))),
-                        str(score[_]),
-                    )
-                )
+            fout.write("#Sample\t%s\tScore\n" % ("\t".join(allele_name)))
+            buffer = []
+            buffer_size = 1000
+
+            for i, (geno, score) in enumerate(zip(genotypes, score), 1):
+                geno_str = "\t".join(map(str, geno))
+                buffer.append(f"{i}\t{geno_str}\t{score}\n")
+
+                if len(buffer) >= buffer_size:
+                    fout.write("".join(buffer))
+                    buffer.clear()
+            if buffer:
+                fout.write("".join(buffer))
+                buffer.clear()
 
     def save_sim_data(self, type_info, genotypes, phenotypes):
         # type_info is like:
