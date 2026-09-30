@@ -1,6 +1,6 @@
-from wpnet_module.gpnet.algorithm.SA import SelectSA
+from gpnet.algorithm.SA import SelectSA
 import numpy as np
-from wpnet_module.gpnet import fast_ridge
+from gpnet.lib import fast_ridge
 
 
 class SelectNet:

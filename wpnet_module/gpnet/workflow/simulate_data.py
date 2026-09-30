@@ -1,6 +1,6 @@
-from wpnet_module.gpnet.io.data_io import DataSaver
-from wpnet_module.gpnet.io.message import Message
-from wpnet_module.gpnet.simulator.simulator import Simulator
+from gpnet.io.data_io import DataSaver
+from gpnet.io.message import Message
+from gpnet.simulator.simulator import Simulator
 from os import getpid, getcwd, chdir, path, makedirs
 from pathos.multiprocessing import Pool
 

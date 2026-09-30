@@ -1,6 +1,6 @@
-from wpnet_module.gpnet.io.data_io import NetLoader
-from wpnet_module.gpnet.io.message import Message
-from wpnet_module.gpnet.selector.selector import SelectNet, SelectNetSimple
+from gpnet.io.data_io import NetLoader
+from gpnet.io.message import Message
+from gpnet.selector.selector import SelectNet, SelectNetSimple
 
 
 def main(args):

@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import networkx as nx
-from wpnet_module.gpnet.io.message import Message
+from gpnet.io.message import Message
 
 mpl.use("Agg")
 
