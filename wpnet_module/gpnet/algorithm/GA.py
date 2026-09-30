@@ -1,5 +1,5 @@
 from numpy import argmax, array, concatenate, inf, random, zeros, arange
-from gpnet.io.data_io import DataSaver
+from wpnet_module.gpnet.io.data_io import DataSaver
 
 
 class GA:

@@ -1,6 +1,6 @@
-from gpnet.io.data_io import GraphLoader, GraphSaver
-from gpnet.io.message import Message
-from gpnet.visualizer.visualizer import GraphVisualizer
+from wpnet_module.gpnet.io.data_io import GraphLoader, GraphSaver
+from wpnet_module.gpnet.io.message import Message
+from wpnet_module.gpnet.visualizer.visualizer import GraphVisualizer
 
 
 def main(args):

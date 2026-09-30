@@ -1,12 +1,11 @@
-from gpnet.io.message import Message
+from wpnet_module.gpnet.io.message import Message
 from os import getpid
-from gpnet.simulator.calc import calc_pheno
-from gpnet.lib import fast_ridge
-from gpnet.algorithm.SA import SA
-from gpnet.algorithm.GA import GA
+from wpnet_module.gpnet.simulator.calc import calc_pheno
+from wpnet_module.gpnet import fast_ridge
+from wpnet_module.gpnet.algorithm.SA import SA
+from wpnet_module.gpnet.algorithm.GA import GA
 import numpy as np
-from gpnet.io.data_io import DataLoader, DataSaver
-import pickle
+from wpnet_module.gpnet.io.data_io import DataLoader, DataSaver
 
 
 class CWNET_FR:

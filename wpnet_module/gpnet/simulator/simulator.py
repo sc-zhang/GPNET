@@ -1,5 +1,5 @@
 from numpy import array, random, sum
-from gpnet.simulator.calc import calc_pheno
+from wpnet_module.gpnet.simulator.calc import calc_pheno
 
 
 class Simulator:

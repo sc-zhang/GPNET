@@ -1,5 +1,6 @@
-from gpnet.workflow import simulate_data, predict_data, visualize_data, select_data
-from gpnet.__version__ import __version__
+from wpnet_module.gpnet.workflow import predict_data, visualize_data
+from wpnet_module.gpnet.workflow import simulate_data, select_data
+from wpnet_module.gpnet.__version__ import __version__
 import argparse
 
 

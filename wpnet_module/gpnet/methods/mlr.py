@@ -1,15 +1,14 @@
-import xgboost as xgb
-from sklearn.model_selection import train_test_split
-from gpnet.simulator.calc import calc_pheno
-from gpnet.algorithm.SA import SA
-from gpnet.algorithm.GA import GA
-from gpnet.io.data_io import DataLoader, DataSaver
-from gpnet.io.message import Message
+from sklearn.linear_model import LinearRegression
 import pickle
+from wpnet_module.gpnet.simulator.calc import calc_pheno
+from wpnet_module.gpnet.algorithm.SA import SA
+from wpnet_module.gpnet.algorithm.GA import GA
+from wpnet_module.gpnet.io.data_io import DataLoader, DataSaver
+from wpnet_module.gpnet.io.message import Message
 from os import getpid
 
 
-class XGB:
+class MLR:
     def __init__(
         self,
         in_file,
@@ -34,60 +33,20 @@ class XGB:
         self.__out_model = out_file + ".pkl"
         self.__type_info = None
         self.__allele_name = None
+        self.__lrg = LinearRegression()
         self.__model = None
 
     def predict(self, data):
-        return self.__model.predict(xgb.DMatrix([data]))[0]
+        return self.__model.predict([data])[0]
 
-    def __model_train(self, genotypes, phenotypes):
-        params = {
-            "learning_rate": 0.001,
-            "max_depth": 2,
-            "objective": "reg:squarederror",
-            "gamma": 0,
-            "subsample": 0.7,
-            "colsample_bytree": 0.7,
-            "reg_alpha": 0.005,
-            "nthread": 1,
-            "eval_metric": ["logloss", "rmse", "mae"],
-            "eta": 0.3,
-        }
-
-        x_train, x_test, y_train, y_test = train_test_split(
-            genotypes, phenotypes, test_size=0.25
-        )
-        dtrain = xgb.DMatrix(x_train, label=y_train)
-        dtest = xgb.DMatrix(x_test, label=y_test)
-
-        res = xgb.cv(
-            params,
-            dtrain,
-            num_boost_round=5000,
-            metrics="rmse",
-            early_stopping_rounds=25,
-        )
-        best_nround = res.shape[0] - 1
-
-        watchlist = [(dtrain, "train"), (dtest, "eval")]
-        evals_result = {}
-
-        self.__model = xgb.train(
-            params,
-            dtrain,
-            num_boost_round=best_nround,
-            evals=watchlist,
-            evals_result=evals_result,
-            verbose_eval=None,
-        )
-
-    def _get_node_importance(self):
+    def _get_node_coefficients(self):
         node_coefficients = []
-        importance = self.__model.get_score(fmap="", importance_type="gain")
-        for idx in range(len(self.__allele_name)):
-            node_coefficients.append([self.__allele_name[idx], importance[idx]])
 
-        # generate additional information of importance of each site, sorted by importance descend
-        additional_info = ["#\n# Nodes importance"]
+        for _ in range(len(self.__allele_name)):
+            node_coefficients.append([self.__allele_name[_], self.__lrg.coef_[_]])
+
+        # generate additional information of coefficients of each site, sorted by coefficients descend
+        additional_info = ["#\n# Nodes coefficients"]
         for _ in sorted(
             node_coefficients, key=lambda x: x[-1], reverse=(not self.__is_lower_better)
         ):
@@ -104,8 +63,10 @@ class XGB:
         self.__type_info = dl.type_info
         self.__allele_name = dl.allele_name
 
-        Message.info("\tPID:%d Starting XGBoost" % getpid())
-        self.__model_train(genotypes, phenotypes)
+        Message.info("\tPID:%d Starting multi linear regression" % getpid())
+        x_train = genotypes
+        y_train = phenotypes
+        self.__model = self.__lrg.fit(x_train, y_train)
         with open(self.__out_model, "wb") as fout:
             pickle.dump(self.__model, fout)
 
@@ -157,6 +118,6 @@ class XGB:
             self.__allele_name,
             [best_data],
             [best_pheno],
-            self._get_node_importance(),
+            self._get_node_coefficients(),
         )
         Message.info("\tPID:%d Saved" % getpid())

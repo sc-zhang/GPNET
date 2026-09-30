@@ -1,5 +1,4 @@
-from gpnet.methods import *
-from gpnet.io.message import Message
+from wpnet_module.gpnet.io.message import Message
 from pathos.multiprocessing import Pool
 from os import path, makedirs
 

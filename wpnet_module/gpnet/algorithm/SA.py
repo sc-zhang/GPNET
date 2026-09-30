@@ -1,7 +1,7 @@
 from copy import deepcopy
 from numpy import random, exp, sum, matrix
-from gpnet.io.data_io import DataSaver, DataLoader
-from gpnet.algorithm import check_comb_exists
+from wpnet_module.gpnet.io.data_io import DataSaver, DataLoader
+from wpnet_module.gpnet.algorithm import check_comb_exists
 
 
 class SA:
