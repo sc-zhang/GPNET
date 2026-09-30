@@ -97,9 +97,9 @@ def main():
     parser_predictor.add_argument(
         "-m",
         "--method",
-        help="Predict method, can be: CWNET, CWNET_FR, MLR, default=CWNET",
+        help="Predict method, can be: CWNET, CWNET_FR, MLR, default=CWNET_FR",
         choices=["CWNET", "CWNET_FR", "MLR"],
-        default="CWNET",
+        default="CWNET_FR",
     )
     parser_predictor.add_argument(
         "--lower",
