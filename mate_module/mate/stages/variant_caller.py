@@ -1,0 +1,174 @@
+from mate.io.file_operate import FastaIO, VariantIO, AlignIO
+from mate.io.message import Message as Msg
+from mate.base.consensus_seq import get_consensus_seq
+from pathos.multiprocessing import Pool
+from os import listdir, path
+import math
+
+
+def __auto_filter_aln(aln_db, consensus_seq, filter_gap=False, filter_div=False):
+    aln_len = len(consensus_seq)
+    if aln_len == 0:
+        return []
+
+    gap_ratios = []
+    divergences = []
+    stat_db = {}
+    for sid, seq in aln_db.items():
+        gap_ratio = seq.count('-') * 1. / aln_len
+
+        mismatch_cnt = 0
+        valid_sites = 0
+        for ref_base, qry_base in zip(consensus_seq, seq):
+            if ref_base != '-' and qry_base != '-':
+                valid_sites += 1
+                if ref_base.upper() != qry_base.upper():
+                    mismatch_cnt += 1
+        div = mismatch_cnt * 1. / valid_sites if valid_sites > 0 else 1.0
+        gap_ratios.append(gap_ratio)
+        divergences.append(div)
+        stat_db[sid] = [gap_ratio, div]
+
+    def get_percentile(data, p):
+        if not data:
+            return 0.0
+        sorted_data = sorted(data)
+        idx = (p / 100.) * (len(sorted_data) - 1)
+        lower = int(math.floor(idx))
+        upper = int(math.ceil(idx))
+        weight = idx - lower
+        return sorted_data[lower] * (1 - weight) + sorted_data[upper] * weight
+
+    base_gap = get_percentile(gap_ratios, 95)
+    base_div = get_percentile(divergences, 95)
+    cutoff_gap = max(0.03, min(base_gap, 0.10))
+    cutoff_div = max(0.005, min(base_div, 0.05))
+
+    retain_samples = []
+
+    for sid, stat in stat_db.items():
+        if filter_gap and stat[0] > cutoff_gap:
+            continue
+        if filter_div and stat[1] > cutoff_div:
+            continue
+        retain_samples.append(sid)
+    return set(retain_samples), cutoff_gap, cutoff_div
+
+
+def __variant_caller_for_single_file(aln_file, var_file, cleanup_aln_file, variant_filter):
+    Msg.info("\tLoading %s" % aln_file)
+    fasta_io = FastaIO(aln_file)
+    fasta_io.read_aln()
+
+    Msg.info("\tGenerating consensus sequence")
+    consensus_seq = get_consensus_seq(fasta_io.fasta_db)
+    seq_len = len(consensus_seq)
+
+    Msg.info("\tDropping low quality sequences")
+
+    # drop samples with too many gaps or high divergence
+    retain_samples, cutoff_gap, cutoff_div = __auto_filter_aln(fasta_io.fasta_db, consensus_seq)
+    Msg.info("\tCutoff, gap: %.4f, div: %.4f" % (cutoff_gap, cutoff_div))
+
+    seq_cnt = len(fasta_io.fasta_db)
+    kmer_length, lower_threshold, missing_threshold = variant_filter.split(':')
+    kmer_length = int(kmer_length)
+    lower_threshold = float(lower_threshold)
+
+    # remove base if more than lower_threshold ratio of samples with lower supported kmer at this position
+    remove_pos = set()
+    for i in range(seq_len - kmer_length + 1):
+        cnt_db = {}
+        for smp in retain_samples:
+            kmer = fasta_io.fasta_db[smp][i: i + kmer_length]
+            if kmer not in cnt_db:
+                cnt_db[kmer] = 0
+            cnt_db[kmer] += 1
+        for kmer in cnt_db:
+            if cnt_db[kmer] * 1. / seq_cnt < lower_threshold:
+                remove_pos.add(i)
+                break
+        # max_cnt = 0
+        # for kmer in cnt_db:
+        #     if cnt_db[kmer] > max_cnt:
+        #         max_cnt = cnt_db[kmer]
+        # if max_cnt*1./seq_cnt < lower_threshold:
+        #     remove_pos.add(i)
+
+    # remove base if more than missing_threshold ratio of samples with '-'
+    missing_threshold = float(missing_threshold) * seq_cnt
+    for pos in range(seq_len):
+        cnt = 0
+        for smp in retain_samples:
+            if fasta_io.fasta_db[smp][pos] == '-':
+                cnt += 1
+        if cnt >= missing_threshold:
+            remove_pos.add(pos)
+
+    cleanup_aln_db = {}
+    aln_db = {}
+    for smp in retain_samples:
+        cleanup_aln_db[smp] = []
+        for pos in range(seq_len):
+            if pos not in remove_pos:
+                cleanup_aln_db[smp].append(fasta_io.fasta_db[smp][pos])
+            else:
+                cleanup_aln_db[smp].append('-')
+    for smp in cleanup_aln_db:
+        aln_db[smp] = ''.join(cleanup_aln_db[smp])
+
+    Msg.info("\tRegenerating consensus sequence")
+    consensus_seq = get_consensus_seq(aln_db)
+    seq_len = len(consensus_seq)
+
+    Msg.info("\tChecking each site")
+    full_info = []
+    for i in range(seq_len):
+        info = []
+        ref = consensus_seq[i].upper()
+        alt = {}
+        for smp in sorted(aln_db):
+            base = aln_db[smp][i]
+            cur_type = 0
+            if base != ref:
+                if base not in alt:
+                    alt[base] = len(alt) + 1
+                cur_type = alt[base]
+            info.append(cur_type)
+        if alt:
+            full_info.append([i, ref, alt, info])
+
+    Msg.info("\tWriting results")
+    var_io = VariantIO()
+    var_io.write_file(var_file, sorted(aln_db.keys()), full_info)
+
+    aln_io = AlignIO()
+    aln_io.write_file(cleanup_aln_file, aln_db)
+    Msg.info("\tFinished")
+
+
+def variant_caller(aln_dir, var_dir, cleanup_aln_dir, variant_filter, thread):
+    pool = Pool(processes=thread)
+    Msg.info("Variant calling")
+
+    res = []
+    for fn in listdir(aln_dir):
+        if not fn.endswith(".aln"):
+            continue
+        Msg.info("\tCalling %s" % fn)
+        aln_file = path.join(aln_dir, fn)
+        var_file = path.join(var_dir, fn.replace('.aln', '.var'))
+        cleanup_aln_file = path.join(cleanup_aln_dir, fn)
+        res.append([fn, pool.apply_async(__variant_caller_for_single_file,
+                                         (aln_file, var_file, cleanup_aln_file, variant_filter,))])
+    pool.close()
+    pool.join()
+
+    # If subprocess failed, the error will be caught.
+    for aln_fn, r in res:
+        try:
+            r.get()
+        except Exception as e:
+            Msg.warn("\tException caught with {}: {}".format(aln_fn, e))
+
+    Msg.info("Variant called")
