@@ -1,11 +1,9 @@
 from gpnet.workflow import predict_data, visualize_data
 from gpnet.workflow import simulate_data, select_data
 from gpnet.__version__ import __version__
-import argparse
 
 
-def main():
-    parser = argparse.ArgumentParser()
+def get_opts(parser):
     parser.add_argument(
         "-v",
         "--version",
@@ -328,8 +326,6 @@ def main():
 
     parser_visualizer.set_defaults(func=visualize_data.main)
 
-    try:
-        args = parser.parse_args()
-        args.func(args)
-    except AttributeError:
-        parser.print_help()
+
+def main(opts):
+    opts.func(opts)

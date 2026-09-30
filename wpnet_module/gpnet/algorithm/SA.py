@@ -1,5 +1,5 @@
 from copy import deepcopy
-from numpy import random, exp, sum, matrix
+from numpy import random, exp, sum
 from gpnet.io.data_io import DataSaver, DataLoader
 from gpnet.algorithm import check_comb_exists
 
@@ -168,7 +168,7 @@ class SelectSA:
         if mat_file is not None:
             dl = DataLoader()
             dl.load_genotype(mat_file)
-            pop_geno = matrix(dl.genotypes)
+            pop_geno = dl.genotypes
             self.__col_masks, self.__col_popcnt = check_comb_exists.build_column_masks(
                 pop_geno
             )

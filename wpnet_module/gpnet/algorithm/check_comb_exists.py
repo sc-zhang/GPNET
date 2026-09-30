@@ -1,9 +1,9 @@
 import numpy as np
 
 
-def build_column_masks(matrix):
+def build_column_masks(pop_matrix):
     # n, m = matrix.shape
-    matrix_T = matrix.astype(bool).T
+    matrix_T = pop_matrix.astype(bool).T
     col_masks = []
     col_popcnt = []
     for col in matrix_T:

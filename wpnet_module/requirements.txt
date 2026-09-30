@@ -1,5 +1,4 @@
 numpy
-xgboost
 scikit-learn
 pathos
 networkx

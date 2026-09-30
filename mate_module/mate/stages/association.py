@@ -7,7 +7,7 @@ from outliers import smirnov_grubbs as grubbs
 from numpy import array, average, std
 import warnings
 
-warnings.filterwarnings("error")
+warnings.filterwarnings("error", category=RuntimeWarning)
 
 
 def __associate_with_single_pheno(pheno_file, cla_dir, asc_file, is_lower_better):
@@ -24,7 +24,7 @@ def __associate_with_single_pheno(pheno_file, cla_dir, asc_file, is_lower_better
 
     is_empty = True
     for fn in sorted(listdir(cla_dir)):
-        gene = '.'.join(fn.split('.')[:-1])
+        gene = ".".join(fn.split(".")[:-1])
         cla_file = path.join(cla_dir, fn)
         Msg.info("\tLoading %s" % cla_file)
         var_io = VariantIO()
@@ -33,7 +33,7 @@ def __associate_with_single_pheno(pheno_file, cla_dir, asc_file, is_lower_better
             Msg.info("\tNo variant found, skipping...")
             continue
 
-        full_info[gene] = {'samples': var_io.samples}
+        full_info[gene] = {"samples": var_io.samples}
         for s in var_io.samples:
             samples_set.add(s)
         Msg.info("\tComparing best and second best variant type")
@@ -48,20 +48,28 @@ def __associate_with_single_pheno(pheno_file, cla_dir, asc_file, is_lower_better
                     continue
                 if geno[geno_idx] not in cur_site_pheno_db:
                     cur_site_pheno_db[geno[geno_idx]] = []
-                cur_site_pheno_db[geno[geno_idx]].append(pheno.pheno_db[var_io.samples[geno_idx]])
+                cur_site_pheno_db[geno[geno_idx]].append(
+                    pheno.pheno_db[var_io.samples[geno_idx]]
+                )
 
             # # remove outliers with grubbs test and get best and second best pheno list for comparison
             cur_site_pheno_list = []
             for pheno_idx in cur_site_pheno_db:
                 try:
-                    clean_pheno = list(grubbs.test(array(cur_site_pheno_db[pheno_idx]), alpha=0.05))
+                    clean_pheno = list(
+                        grubbs.test(array(cur_site_pheno_db[pheno_idx]), alpha=0.05)
+                    )
 
                 except RuntimeWarning:
                     clean_pheno = cur_site_pheno_db[pheno_idx]
-                cur_site_pheno_list.append([average(clean_pheno), pheno_idx, clean_pheno])
+                cur_site_pheno_list.append(
+                    [average(clean_pheno), pheno_idx, clean_pheno]
+                )
             if len(cur_site_pheno_list) < 2:
                 continue
-            cur_site_pheno_list = sorted(cur_site_pheno_list, reverse=True if not is_lower_better else False)
+            cur_site_pheno_list = sorted(
+                cur_site_pheno_list, reverse=True if not is_lower_better else False
+            )
             _, best_type, best_pheno = cur_site_pheno_list[0]
             _, sec_best_type, sec_best_pheno = cur_site_pheno_list[1]
 
@@ -76,20 +84,37 @@ def __associate_with_single_pheno(pheno_file, cla_dir, asc_file, is_lower_better
             else:
                 equal_var = False
             try:
-                t_pvalue = ttest_ind(best_pheno, sec_best_pheno, equal_var=equal_var).pvalue
+                t_pvalue = ttest_ind(
+                    best_pheno, sec_best_pheno, equal_var=equal_var
+                ).pvalue
             except RuntimeWarning:
                 continue
             if t_pvalue <= 0.05:
                 variants.append(var_io.variants[i])
-                stat_info.append([levene_pvalue, t_pvalue,
-                                  "%d(%d|%.2f|%.2f)" % (best_type, len(best_pheno),
-                                                        average(best_pheno), std(best_pheno)),
-                                  "%d(%d|%.2f|%.2f)" % (sec_best_type, len(sec_best_pheno),
-                                                        average(sec_best_pheno), std(sec_best_pheno))])
+                stat_info.append(
+                    [
+                        levene_pvalue,
+                        t_pvalue,
+                        "%d(%d|%.2f|%.2f)"
+                        % (
+                            best_type,
+                            len(best_pheno),
+                            average(best_pheno),
+                            std(best_pheno),
+                        ),
+                        "%d(%d|%.2f|%.2f)"
+                        % (
+                            sec_best_type,
+                            len(sec_best_pheno),
+                            average(sec_best_pheno),
+                            std(sec_best_pheno),
+                        ),
+                    ]
+                )
         if variants:
             is_empty = False
-        full_info[gene]['variants'] = variants
-        full_info[gene]['stats'] = stat_info
+        full_info[gene]["variants"] = variants
+        full_info[gene]["stats"] = stat_info
 
     if not is_empty:
         asc_io = AssociateIO()
@@ -113,9 +138,21 @@ def associate_with_pheno(pheno_dir, cla_dir, asc_dir, thread):
             is_lower_better = False
 
         pheno_file = path.join(pheno_dir, pheno_fn)
-        asc_file = path.join(asc_dir, '.'.join(pheno_fn.split('.')[:-1]) + '.asc')
-        res.append([pheno_fn, pool.apply_async(__associate_with_single_pheno,
-                                               (pheno_file, cla_dir, asc_file, is_lower_better,))])
+        asc_file = path.join(asc_dir, ".".join(pheno_fn.split(".")[:-1]) + ".asc")
+        res.append(
+            [
+                pheno_fn,
+                pool.apply_async(
+                    __associate_with_single_pheno,
+                    (
+                        pheno_file,
+                        cla_dir,
+                        asc_file,
+                        is_lower_better,
+                    ),
+                ),
+            ]
+        )
     pool.close()
     pool.join()
 
