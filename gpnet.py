@@ -12,6 +12,8 @@ from mate_module.mate.cli.mate import get_opts as get_mate_opts
 from mate_module.mate.cli.mate import main as mate_entry
 from wpnet_module.gpnet.cli.gpnet import get_opts as get_wpnet_opts
 from wpnet_module.gpnet.cli.gpnet import main as wpnet_entry
+from report_module.report.cli import get_opts as get_report_opts
+from report_module.report.report import process as report_entry
 
 VERSION = "1.1.0"
 
@@ -28,6 +30,10 @@ def main():
     parser_wpnet = subparsers.add_parser("wpnet", help="WPNET module of GPNet")
     get_wpnet_opts(parser_wpnet)
     parser_wpnet.set_defaults(func=wpnet_entry)
+
+    parser_report = subparsers.add_parser("report", help="Report module of GPNet")
+    get_report_opts(parser_report)
+    parser_report.set_defaults(func=report_entry)
 
     try:
         args = parser.parse_args()

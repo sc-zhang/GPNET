@@ -49,16 +49,17 @@ pip install -r requirements.txt
 ### Main program
 
 ```bash
-usage: gpnet.py [-h] [-v] {mate,wpnet} ...
+usage: gpnet.py [-h] [-v] {mate,wpnet,report} ...
+
+positional arguments:
+  {mate,wpnet,report}
+    mate               MATE module of GPNet
+    wpnet              WPNET module of GPNet
+    report             Report module of GPNet
 
 options:
-  -h, --help     show this help message and exit
-  -v, --version  show program's version number and exit
-
-sub commands:
-  {mate,wpnet}
-    mate         MATE module of GPNet
-    wpnet        WPNET module of GPNet
+  -h, --help           show this help message and exit
+  -v, --version        show program's version number and exit
 ```
 
 #### 1. First stage with MATE module
@@ -75,7 +76,8 @@ gpnet.py mate -q genomes/ -r genes.fa -p pheno/ -o wrkdir/ -t 12
 
 > **Notice**
 > - **genomes** is a folder which contained all fasta files of samples, like: ABC.fa.
-> - **genes.fa** is a fasta file contain all candidate CDS sequences.
+> - **genes.fa** is a fasta file contain all candidate CDS sequences, the id of genes in reference cds file must not
+    contain invalid characters that cannot use in path, like '/', '\', '?', et al.
 > - **pheno** is a folder which contained all phenotypes files, the phenotype file should be a tsv file named with
     target
 > - **phenotype**, and with two columns, [sample, trait value], genome_name should be matched with the name of genome
@@ -96,6 +98,8 @@ gpnet.py mate -q query_cds/ --query_type cds -r genes.fa -p pheno/ -o wrkdir/ -t
     file without last suffix, like: ABC.
 
 The mat files in wrkdir/0*.VariantMatrix/02.SignificantAlleles could be used for next stage analysis.
+> **Notice**
+> The "." in
 
 #### 2. Second stage with WPNET
 
@@ -107,7 +111,7 @@ Details of WPNET module could be found in [WPNET](wpnet_module/README.md)
 
 ```bash
 mkdir gpnet_wrkdir
-gpnet.py wpnet predictor -i wrkdir/08.VariantMatrix/02.SignificantAlleles/Phenotype1.mat -o gpnet_wrkdir/Phenotype1.gpnet -m CWNET_FR --single -t 12 
+gpnet.py wpnet predictor -i wrkdir/08.VariantMatrix/02.SignificantAlleles/Phenotype1.mat -o gpnet_wrkdir/Phenotype1.txt -m CWNET_FR --single -t 12 
 ```
 
 > **Notice**
@@ -131,10 +135,36 @@ and best pyramiding sample, weights of nodes and edges.
 ##### Selecting top _k_ pyramiding alleles
 
 ```bash
-gpnet.py wpnet selector -i gpnet_wrkdir/Phenotype1.gpnet -m gpnet_wrkdir/Phenotype1.gpnet.bin -n 3 -o Phenotype1_select3.txt
+gpnet.py wpnet selector -i gpnet_wrkdir/Phenotype1.txt -m gpnet_wrkdir/Phenotype1.gpnet.bin -n 3 -o Phenotype1_select3.txt
 ```
 
 > **Notice**
 > The bin file would only be found with CWNET_FR method (the recommend and default method of WPNET)
 
 The output file is a text file for which each line is a allele id.
+
+#### 3. Final stage for getting result
+
+- Get report of predicted best individual
+
+```bash
+gpnet.py report -i gpnet_wrkdir/Phenotype1.txt -m wrkdir/08.VariantMatrix/02.SignificantAlleles/Phenotype1.mat -o report
+```
+
+- Get report of selected top _k_ pyramiding alleles
+
+```bash
+gpnet.py report -i Phenotype1_select3.txt -m wrkdir/08.VariantMatrix/02.SignificantAlleles/Phenotype1.mat -o report
+```
+
+##### Result files
+
+- **allele_source.tsv**: a tsv file contain two or three columns, for predict file, there are 3 columns
+  [Allele, AlleleWeight, SourceSamples]; for select file, there are 2 columns [Allele, SourceSamples]. The source
+  samples are the samples contain current Allele.
+- **sample_score.tsv**: a tsv file contain three or four columns, for predict file, there are 4
+  columns [Sample, ContainAlleleCount, Score, Alleles]; for select file, there are three
+  columns [Sample, ContainAlleleCount, Alleles]. The ContainAlleleCount means the counts of alleles in best pyramiding
+  or be selected could be found in current sample. The score is the sum of weights of alleles in best pyramiding or be
+  selected could be found in current sample. The Alleles are the list of best pyramiding or selected alleles in current
+  sample.
