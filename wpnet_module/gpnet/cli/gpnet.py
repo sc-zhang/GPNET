@@ -222,10 +222,10 @@ def get_opts(parser):
     )
     parser_selector.add_argument(
         "--method",
-        help="Method for selecting best n alleles, default=SA",
+        help="Method for selecting best n alleles, default=Simple",
         type=str,
-        choices=["SA", "Simple"],
-        default="SA",
+        choices=["Simple", "SA"],
+        default="Simple",
     )
     parser_selector.add_argument(
         "--iter",

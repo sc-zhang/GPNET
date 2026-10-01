@@ -133,7 +133,7 @@ class SelectNetSimple:
         ):
             if node not in best_alleles:
                 continue
-            gn, _ = node.split("-")
+            gn = "-".join(node.split("-")[:-1])
             if gn in best_used_genes:
                 continue
             best_sel.append(node)
