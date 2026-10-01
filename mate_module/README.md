@@ -18,20 +18,9 @@ This software is a tool for identifying variants associate with phenotypes from 
 - bioplotz
 - pysam
 
-## Installation
-
-```bash
-cd /path/to/install
-git clone https://github.com/sc-zhang/MATE.git
-pip install -r requirements.txt
-chmod +x MATE/mate.py
-echo 'export PATH=/path/to/install/MATE:$PATH' >> ~/.bash_profile
-source ~/.bash_profile
-```
-
 ## Usage
 
-```bash                                                                                                                                                                                                                                                                                             ─╯
+```bash
 usage: mate.py [-h] -q QUERY [--query_type {genome,bam,cds}] -r REFERENCE [--ref_type {cds,gff3}] [-l PLOIDY] -p PHENO [--cds_align] [--variant_filter VARIANT_FILTER] [--allele_filter ALLELE_FILTER] -o OUTPUT [-s] [--format FORMAT] [-t THREAD] [-v]
 
 options:

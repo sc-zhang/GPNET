@@ -12,29 +12,9 @@ Software:
 Python modules:
 
 - numpy
-- xgboost
 - scikit-learn
 - pathos
 - networkx
-
-## Installation
-
-```bash
-cd /path/to/install
-git clone https://github.com/sc-zhang/GPNET.git
-cd GPNET
-chmod +x wpnet.py
-
-# build rust lib
-cd fast_ridge
-cargo build --release
-cp target/release/libfast_ridge.so ../gpnet/lib/fast_ridge.so
-cd ..
-
-# Optional
-echo 'export PATH=/path/to/install/GPNET:$PATH' >> ~/.bash_profile
-source ~/.bash_profile
-```
 
 ## Usage
 
