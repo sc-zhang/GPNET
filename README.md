@@ -31,6 +31,12 @@ Python modules used by GPNet are listed in `requirements.txt`.
 
 ## Installation
 
+- Download from release
+
+[GPNET v1.1.0](https://github.com/sc-zhang/GPNET/releases/download/v1.1.0/GPNET-v1.1.0.zip)
+
+- Build from source
+
 ```bash
 cd /path/to/install
 git clone https://github.com/sc-zhang/GPNET.git
