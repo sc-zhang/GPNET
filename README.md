@@ -98,8 +98,6 @@ gpnet.py mate -q query_cds/ --query_type cds -r genes.fa -p pheno/ -o wrkdir/ -t
     file without last suffix, like: ABC.
 
 The mat files in wrkdir/0*.VariantMatrix/02.SignificantAlleles could be used for next stage analysis.
-> **Notice**
-> The "." in
 
 #### 2. Second stage with WPNET
 
