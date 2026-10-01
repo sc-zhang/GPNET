@@ -11,6 +11,7 @@ case "$(uname -s)" in
   *) LIB_FILE="libfast_ridge.so" ;;
 esac
 
+mkdir -p ../gpnet/lib
 cp target/release/${LIB_FILE} ../gpnet/lib/fast_ridge.so
 
 echo "Finished"
